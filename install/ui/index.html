@@ -51,10 +51,29 @@ pre.summary{background:var(--code);border-radius:8px;padding:12px;white-space:pr
   </section>
 
   <section class="card">
-    <h2><span class="num">2</span> Source folders (isolated vaults)</h2>
+    <h2><span class="num">2</span> Source folders and notes vault</h2>
     <p class="hint">Only these folders are read, recursively and read-only. Credential, app-data and cloud-sync folders are refused.</p>
     <div id="folders"></div>
     <div class="row"><button id="addFolder">+ Add folder…</button><span id="folderMsg" class="mut"></span></div>
+    <h3 style="font-size:14px;margin:16px 0 2px">Notes vault</h3>
+    <p class="hint">A folder of Markdown notes you write with Obsidian or any text editor. The second brain reads it as knowledge and never writes to it.
+      Folders: 00 Home · 01 Inbox · 02 Daily · 03 Company · 04 Services · 05 Clients · 06 Projects · 07 Sales · 08 Knowledge · 10 Meetings · 11 Decisions · 12 Assets · 13 Archive · 14 Systems · 15 Personal · 90 Templates.</p>
+    <div class="radio" id="vaultMode">
+      <label><input type="radio" name="vmode" value="new" checked> Create a new vault</label>
+      <label><input type="radio" name="vmode" value="existing"> Use an existing vault</label>
+      <label><input type="radio" name="vmode" value="none"> No vault</label>
+    </div>
+    <div class="row" id="vaultRow">
+      <div class="field"><label for="vault">Vault folder</label><input type="text" id="vault"></div>
+      <button id="pickVault" style="align-self:flex-end">Choose…</button>
+    </div>
+    <div class="row" id="vaultOpts">
+      <label><input type="checkbox" id="vComplete" checked> Add missing standard folders and templates (never changes existing notes)</label>
+      <label><input type="checkbox" id="vClients" checked> Index client &amp; sales notes</label>
+      <label><input type="checkbox" id="vPersonal"> Index 15 Personal</label>
+      <label id="vConfirmL" style="display:none"><input type="checkbox" id="vConfirm"> <span id="vConfirmMsg"></span></label>
+    </div>
+    <p class="hint" id="vaultMsg"></p>
     <div class="row" style="margin-top:14px">
       <div class="field"><label for="instance">Instance folder (config, index, logs — outside the repo)</label><input type="text" id="instance"></div>
       <button id="pickInstance" style="align-self:flex-end">Choose…</button>
@@ -99,7 +118,7 @@ pre.summary{background:var(--code);border-radius:8px;padding:12px;white-space:pr
     <p class="hint">Uses the instance's sandboxed launcher (macOS). Start with Doctor: every line should PASS.</p>
     <div class="row">
       <button data-act="doctor">Doctor</button><button data-act="ingest">Ingest</button><button data-act="eval">Evaluate</button>
-      <button data-act="pipeline" id="pipelineBtn">Full pipeline</button><button data-act="stats">Stats</button><button id="openInst">Open instance folder</button>
+      <button data-act="pipeline" id="pipelineBtn">Full pipeline</button><button data-act="stats">Stats</button><button data-act="vault">Vault index</button><button id="openInst">Open instance folder</button><button id="openVault">Open vault</button>
     </div>
     <div class="row"><input type="text" id="question" placeholder="Ask your second brain…"><button data-act="ask">Ask</button></div>
   </section>
@@ -121,6 +140,8 @@ async function load() {
   S = await api('/api/state');
   $('installer').textContent = S.installer;
   if (!$('instance').value) $('instance').value = S.default_instance;
+  if (!$('vault').value) $('vault').value = S.default_vault;
+  vaultCheck();
   if (S.os === 'Windows') { $('pipelineBtn').disabled = true; $('pipelineBtn').title = 'bash-only; use Ingest and Evaluate'; }
   $('prereqs').innerHTML = S.prereqs.map(p => {
     const st = p.ok ? '<span class="ok">✓ ready</span>' : (p.required ? '<span class="bad">✗ missing</span>' : '<span class="warn">○ optional</span>');
@@ -140,11 +161,27 @@ function renderFolders() {
   summary();
 }
 
+function vmode() { return document.querySelector('input[name=vmode]:checked').value; }
+let V = null, vTimer = null;
+async function vaultCheck() {
+  const m = vmode();
+  ['vaultRow','vaultOpts'].forEach(id => $(id).style.display = m === 'none' ? 'none' : '');
+  if (m === 'none') { V = null; $('vaultMsg').textContent = ''; summary(); return; }
+  try {
+    V = await api('/api/vault-plan', {mode: m, path: $('vault').value});
+    $('vConfirmL').style.display = V.status === 'sensitive' ? '' : 'none'; $('vConfirmMsg').textContent = 'use it anyway (' + V.message + ')';
+    $('vaultMsg').innerHTML = V.status === 'refused' ? `<span class="bad">${esc(V.message)}</span>`
+      : (V.exists ? `${V.missing} standard folder(s)/template(s) missing in this folder.` : `A new vault with ${V.missing} folders and templates will be created.`);
+  } catch (err) { $('vaultMsg').textContent = err.message; }
+  summary();
+}
+
 function provider() { return document.querySelector('input[name=provider]:checked').value; }
 
 function summary() {
   if (!S) return;
   const p = provider(), inst = $('instance').value.trim(), roots = folders.filter(f => f.status === 'ok' || f.confirmed).map(f => f.path);
+  if (vmode() !== 'none' && $('vault').value.trim()) roots.push($('vault').value.trim() + '  (notes vault)');
   $('hostedRow').style.display = $('hostedNote').style.display = p === 'ollama' ? 'none' : '';
   if (p !== 'ollama' && !$('keyenv').value) $('keyenv').value = p === 'anthropic' ? 'ANTHROPIC_API_KEY' : 'OPENAI_API_KEY';
   const op = $('operator').value;
@@ -158,7 +195,9 @@ NEVER READ:    .env*, keys/certificates, credential files, browser profiles, .gi
                dependency/build folders, databases, email/chat exports; symlinks never followed.
 OS SANDBOX:    ${S.os === 'Darwin' ? 'macOS Seatbelt profile (enforced by the OS)' : 'NOT AVAILABLE on this OS (rules enforced in code only)'}
 MODELS:        chat ${p === 'ollama' ? ($('chat').value || '?') + ' (Ollama)' : ($('hosted').value || '?') + ` (${p}, key from $${$('keyenv').value})`} · embeddings ${$('embed').value} (Ollama)
-OPERATOR:      ${op === 'none' ? 'none' : op + ' — rule files generated in <instance>/agent/; what it reads goes to its provider'}`;
+OPERATOR:      ${op === 'none' ? 'none' : op + ' — rule files generated in <instance>/agent/; what it reads goes to its provider'}
+NOTES VAULT:   ${vmode() === 'none' ? 'none' : `${$('vault').value} (read-only for the second brain${V && V.missing && (vmode() === 'new' || $('vComplete').checked) ? `; creates ${V.missing} folder(s)/template(s) there now, changes nothing existing` : ''})
+               personal notes ${$('vPersonal').checked ? 'indexed' : 'NOT indexed'}; client/sales notes ${$('vClients').checked ? 'indexed' : 'NOT indexed'}`}`;
 }
 
 async function watch(job, title) {
@@ -192,7 +231,10 @@ document.addEventListener('change', e => {
   if (e.target.dataset.confirm !== undefined) { folders[+e.target.dataset.confirm].confirmed = e.target.checked; summary(); }
   else summary();
 });
-document.addEventListener('input', summary);
+document.addEventListener('input', e => { if (e.target.id === 'vault') { clearTimeout(vTimer); vTimer = setTimeout(vaultCheck, 400); } summary(); });
+document.querySelectorAll('input[name=vmode]').forEach(r => r.addEventListener('change', vaultCheck));
+$('pickVault').onclick = async () => { const d = await api('/api/pick-folder', {kind: 'vault'}); if (d.path) { $('vault').value = d.path; vaultCheck(); } };
+$('openVault').onclick = () => api('/api/open-folder', {path: $('vault').value}).catch(err => alert(err.message));
 $('refresh').onclick = load;
 $('logClose').onclick = () => $('log').style.display = 'none';
 $('addFolder').onclick = async () => {
@@ -223,7 +265,9 @@ $('create').onclick = async () => {
       instance: $('instance').value, roots: folders.map(f => ({path: f.path, confirmed: f.confirmed})),
       provider: provider(), chat_model: $('chat').value, embed_model: $('embed').value,
       hosted_model: $('hosted').value, api_key_env: $('keyenv').value, operator: $('operator').value,
-      granted: $('granted').checked, continue_missing: $('contMissing').checked});
+      granted: $('granted').checked, continue_missing: $('contMissing').checked,
+      vault_mode: vmode(), vault_path: $('vault').value, vault_complete: $('vComplete').checked, vault_confirmed: $('vConfirm').checked,
+      vault_personal: $('vPersonal').checked, vault_clients: $('vClients').checked});
     const rc = await watch(job, 'Create instance');
     if (rc === 0) $('instance').value = instance;
   } catch (err) { $('createMsg').textContent = err.message; }

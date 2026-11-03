@@ -6,7 +6,7 @@
    "type": "self",
    "q": "What model is this second brain using?",
    "expect_paths": [
-    "knowledge/maps/system-card.md"
+    "knowledge/00 Home/system-card.md"
    ],
    "expect_terms": [
     "{{CHAT_MODEL}}"

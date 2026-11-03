@@ -66,5 +66,7 @@
       "%/.claude/commands/%.md",
       "%/.github/prompts/%.md"
     ]
-  }
+  },
+  "vaults": [],
+  "_vaults_doc": "Notes vaults (folders of Markdown notes you edit in Obsidian or any editor), read-only. Each: {path, include_personal, include_clients, folder_map}. folder_map maps a top folder that is not a standard category to one, e.g. {\"AI\": \"knowledge\", \"copilot\": \"skip\"}. Categories: home inbox daily company services clients projects sales knowledge meetings decisions archive systems personal notes; skipped: templates bases canvas assets skip."
 }

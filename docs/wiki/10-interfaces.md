@@ -10,7 +10,7 @@ Always use the sandboxed launcher: `SB=<instance>/bin/sb-sandboxed`. The excepti
 | `$SB query "terms" [--eval]` | Retrieval only: scores, paths, lines, snippets |
 | `$SB serve` | Web UI on `http://127.0.0.1:8765/?t=<token>` |
 | `$SB ingest [--full] [--no-embed] [--eval]` · `$SB embed` | Index / embed |
-| `$SB inventory` · `$SB knowledge map\|cards\|system` | [Knowledge](08-knowledge.md) |
+| `$SB inventory` · `$SB knowledge map\|cards\|system\|vault` | [Knowledge](08-knowledge.md) |
 | `$SB skills import\|list\|show\|approve\|run` | [Skills](09-skills.md) |
 | `$SB doctor [--record]` | [Health and security checks](11-doctor.md) |
 | `$SB eval [--system] [--only IDS]` | [Evaluation](12-evaluation.md) |

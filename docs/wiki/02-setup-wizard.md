@@ -12,6 +12,7 @@
 | 2 | **Locations** | Instance folder (refused if inside the repo). Source folders, each validated: must exist, no symlinks, not your whole home, not credential/app-data/cloud folders (`~/.ssh`, `~/.aws`, `~/Library`, `~/.config`, `~/.claude`, `~/.ollama`, …). Desktop/Documents/Downloads need an extra yes |
 | 3 | **Models** | Lists installed Ollama models; asks for the embedding model (default `nomic-embed-text`) and local chat model. Hosted: model id + the **name** of the env var holding the API key (the key is never stored) |
 | 4 | **Permission summary** | READ / WRITE / NETWORK / NEVER-READ / OS sandbox / operator; you answer yes or no |
+| 2b | **Notes vault** | new (default `~/SecondBrainVault`) / existing / none; index 15 Personal? (default no); index client & sales notes? (default yes). The vault is added to the source folders; see [Notes vault](15-notes-vault.md) |
 | 5 | **Create instance** | `umask 077`; writes config, Seatbelt profile, launchers, eval questions + fixtures, agent files, `README-INSTANCE.md` |
 
 ## What the instance contains
@@ -20,7 +21,7 @@
   config/   secondbrain.json · source-register.json · exclusions.json · prompts/ · seatbelt/secondbrain.sb · env.sh
   bin/      sb · sb-sandboxed · sb-validate · run-all.sh
   index/    brain.sqlite (main) · eval.sqlite (fixtures)
-  knowledge/ maps/ · projects/ · decisions/        (generated, indexed as "derived")
+  knowledge/ 00 Home/ · 06 Projects/ · 11 Decisions/   (generated, indexed as "derived"; opens as an Obsidian vault)
   skills/   candidates/ · approved/
   eval/     questions.json · fixtures/ · results/ · validation/
   logs/  models/  backups/  tmp/  agent/

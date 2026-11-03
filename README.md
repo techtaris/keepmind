@@ -5,6 +5,7 @@ A private, searchable "second brain" over folders **you** choose. It answers que
 - **Local by default:** Ollama runs the LLM and the embeddings on `127.0.0.1`, and a macOS sandbox blocks the internet.
 - **Optional hosted answers:** Claude (Anthropic API) or OpenAI (the provider behind Codex), with a clear disclosure.
 - **Optional operator agent:** Claude Code or Codex can use the brain through the `sb` command, under generated permission rules.
+- **Notes vault:** one folder of Markdown notes (Obsidian or any editor) with category folders (00 Home … 15 Personal) and templates; you write, the second brain reads it as knowledge. See [Notes vault](docs/wiki/15-notes-vault.md).
 - **Optional second opinion:** `sb validate` asks Claude (your own Claude Code login, on demand) whether a "Not in the second brain" answer was right.
 
 📚 **Documentation wiki:** [docs/README.md](docs/README.md), including [the Judgment Call](docs/wiki/06-judgment-call.md) and interactive [diagrams](docs/README.md#diagrams).
@@ -39,6 +40,7 @@ bash ~/SecondBrain-Instance/bin/run-all.sh
 | Instance folder | `~/SecondBrain-Instance` (must be outside this repo) |
 | Source folders | You list them. Credential, app-data and cloud-sync folders are refused; Desktop/Documents/Downloads need confirmation |
 | Models | Embedding model + local chat model (or a hosted model id + the *name* of the environment variable holding the API key) |
+| Notes vault | `new` = create `~/SecondBrainVault` with folders 00 Home … 15 Personal + 90 Templates and note templates; or use an existing vault; or none |
 | Permissions | A summary of READ / WRITE / NETWORK / NEVER-READ / sandbox; nothing is created until you say yes |
 
 ## Layout
@@ -47,6 +49,7 @@ bash ~/SecondBrain-Instance/bin/run-all.sh
 |---|---|
 | `setup.sh`, `setup_wizard.py` | Setup (terminal) |
 | `install/` | Desktop installer (`app.py` + `ui/index.html`) and prerequisite scripts (`install.sh`, `install.ps1`, `install.bat`) |
+| `vault_init.py`, `templates/vault/` | Notes vault starter: category folders, note templates, Obsidian settings (never overwrites) |
 | `src/sb.py` | The engine: ingest, search, ask, serve, doctor, eval, knowledge, skills, backup (Python standard library only) |
 | `templates/` | Config, exclusions, sandbox profile, prompts, launchers, eval fixtures, operator-agent files |
 | `docs/` | [Wiki home](docs/README.md) · `wiki/` feature pages · `diagrams/` (Archify HTML) · `REQUIREMENTS.md`, `SECURITY.md`, `AGENTS.md`, `RUNBOOK.md` |

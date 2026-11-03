@@ -7,9 +7,12 @@ The repo itself never stores personal paths or data.
 Interactive:      python3 setup_wizard.py
 Non-interactive:  SB_NONINTERACTIVE=1 SB_INSTANCE=... SB_ROOTS="/a:/b" (";" on Windows) [SB_PROVIDER=ollama|anthropic|openai]
                   [SB_CHAT_MODEL=...] [SB_EMBED_MODEL=...] [SB_HOSTED_MODEL=...] [SB_API_KEY_ENV=...]
-                  [SB_OPERATOR=none|claude-code|codex] [SB_ACCEPT=yes] python3 setup_wizard.py
+                  [SB_OPERATOR=none|claude-code|codex] [SB_VAULT_MODE=new|existing|none] [SB_VAULT_PATH=...]
+                  [SB_VAULT_COMPLETE=y|n] [SB_VAULT_PERSONAL=y|n] [SB_VAULT_CLIENTS=y|n] [SB_ACCEPT=yes] python3 setup_wizard.py
 """
 import json, os, platform, re, shutil, sqlite3, stat, subprocess, sys, urllib.request
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import vault_init  # noqa: E402
 
 REPO = os.path.dirname(os.path.abspath(__file__))
 TPL = os.path.join(REPO, "templates")
@@ -79,11 +82,14 @@ def ollama_models():
     except Exception:  # noqa: BLE001
         return []
 
-def classify_root(p):
+def classify_root(p, must_exist=True):
     """Pure check, no prompts (also used by the desktop installer). Returns (abs_path, status, message);
-    status is "ok", "sensitive" (allowed only with explicit confirmation) or "refused"."""
+    status is "ok", "sensitive" (allowed only with explicit confirmation) or "refused".
+    must_exist=False is for a notes vault that the wizard is about to create."""
     p = os.path.abspath(os.path.expanduser(p))
-    if not os.path.isdir(p): return p, "refused", "not a directory"
+    if must_exist and not os.path.isdir(p): return p, "refused", "not a directory"
+    if not must_exist and os.path.exists(p) and not os.path.isdir(p): return p, "refused", "exists and is not a folder"
+    if not must_exist and not os.path.isdir(os.path.dirname(p)): return p, "refused", "its parent folder does not exist"
     if os.path.islink(p) or os.path.realpath(p) != p: return p, "refused", "is (or passes through) a symlink: give the real path"
     if p == HOME or p == os.path.abspath(os.sep) or os.path.dirname(p) == p: return p, "refused", "too broad: choose specific folders"
     if p == REPO or p.startswith(REPO + os.sep): return p, "refused", "this is the Second Brain code repository"
@@ -164,7 +170,36 @@ def main():
         p, why = validate_root(c)
         say(f"    {'+' if p else '-'} {c}: {why}")
         if p and p not in roots: roots.append(p)
-    if not roots: sys.exit("No valid source folders.")
+
+    # notes vault (Obsidian or any Markdown editor): the second brain READS it; you write in it
+    say("\n  Notes vault: a folder of Markdown notes that you write and edit (Obsidian or any text editor).")
+    say("  The second brain reads it as knowledge (never writes to it). Folders: 00 Home, 01 Inbox, 02 Daily, 03 Company,\n"
+        "  04 Services, 05 Clients, 06 Projects, 07 Sales, 08 Knowledge, 10 Meetings, 11 Decisions, 12 Assets, 13 Archive,\n"
+        "  14 Systems, 15 Personal, 90 Templates.")
+    say("    new      = create a new vault with these folders and note templates (recommended)\n"
+        "    existing = use a vault you already have (missing folders/templates are added only if you agree)\n    none     = no vault")
+    vmode = ask("  Notes vault", "new", "SB_VAULT_MODE", ["new", "existing", "none"])
+    vault = None; vault_todo = []; vault_cfg = None
+    if vmode != "none":
+        vp = ask("  Vault folder", os.path.join(HOME, "SecondBrainVault") if vmode == "new" else "", "SB_VAULT_PATH")
+        if not vp: sys.exit("A vault folder is required (or choose none).")
+        vp, status, msg = classify_root(vp, must_exist=(vmode == "existing"))
+        if vp == inst or vp.startswith(inst + os.sep) or inst.startswith(vp + os.sep):
+            status, msg = "refused", "the vault and the instance folder must not contain each other"
+        if status == "refused": sys.exit(f"Vault folder refused: {msg}")
+        if status == "sensitive" and not yes(f"  {msg}. Use {vp} as the vault?", "SB_ALLOW_SENSITIVE"):
+            sys.exit("Nothing was created.")
+        vault_todo = vault_init.plan(vp)
+        if vmode == "existing" and vault_todo:
+            say(f"  {len(vault_todo)} standard folder(s)/template(s) are missing in {vp}, e.g. " + ", ".join(r for _, r in vault_todo[:6]))
+            if not yes("  Add them (nothing existing is changed or deleted)?", "SB_VAULT_COMPLETE", "y"): vault_todo = []
+        personal = yes("  Index notes in 15 Personal (health, travel, life)?", "SB_VAULT_PERSONAL", "n")
+        if provider != "ollama":
+            say(f"  note: with the {provider} backend, excerpts of the vault notes used for an answer are sent to {provider}.")
+        clients = yes("  Index client and sales notes (05 Clients, 07 Sales)?", "SB_VAULT_CLIENTS", "y")
+        vault = vp; vault_cfg = {"path": vp, "include_personal": personal, "include_clients": clients, "folder_map": {}}
+        if not any(vp == r or vp.startswith(r + os.sep) for r in roots): roots.append(vp)
+    if not roots: sys.exit("No valid source folders (and no notes vault).")
     if any(inst == r or inst.startswith(r + "/") for r in roots):
         say(f"  note: the instance folder is inside a source root; it will be excluded from indexing automatically.")
 
@@ -185,6 +220,10 @@ def main():
     say("\n== 4. Permissions you are granting ==")
     say("  READ (only):   " + "\n                 ".join(reads))
     say(f"  WRITE (only):  {inst}")
+    if vault:
+        say(f"  NOTES VAULT:   {vault} (read-only for the second brain"
+            + (f"; the wizard now creates {len(vault_todo)} folder(s)/template(s) there, changing nothing existing)" if vault_todo else ")")
+            + f"\n                 personal notes {'indexed' if vault_cfg['include_personal'] else 'NOT indexed'}; client/sales notes {'indexed' if vault_cfg['include_clients'] else 'NOT indexed'}")
     say("  NETWORK:       " + ("loopback only (127.0.0.1): Ollama + local web UI. Internet denied, including DNS." if provider == "ollama"
                               else f"loopback + HTTPS :443 to the {provider} API. Retrieved excerpts of your files are sent to {provider}."))
     say("  NEVER READ:    .env*, keys/certificates, credential files, browser profiles, .git internals, dependency/build folders,\n"
@@ -195,8 +234,12 @@ def main():
     if not yes("Grant these permissions and create the instance?", "SB_ACCEPT"):
         sys.exit("Nothing was created.")
 
+    # ---------------------------------------------------------------- create the vault (only what is missing)
+    if vault and (vault_todo or not os.path.isdir(vault)):
+        vault_init.init(vault, out=lambda m: say("  " + m))
+        roots = [os.path.realpath(r) if r == vault else r for r in roots]
     # ---------------------------------------------------------------- create the instance
-    for d in ["config/seatbelt", "config/prompts", "bin", "index", "knowledge/maps", "knowledge/projects", "knowledge/decisions",
+    for d in ["config/seatbelt", "config/prompts", "bin", "index", "knowledge/00 Home", "knowledge/06 Projects", "knowledge/11 Decisions",
               "skills/candidates", "skills/approved", "eval/results", "eval/fixtures/injection", "eval/fixtures/freshness",
               "eval/fixtures/secret-named", "eval/fixtures/oos-denied", "eval/fixtures/symlink", "logs", "models", "backups", "tmp", "agent"]:
         os.makedirs(os.path.join(inst, d), exist_ok=True)
@@ -205,6 +248,9 @@ def main():
 
     cfg = json.loads(tpl("secondbrain.json"))
     cfg.update(home=HOME, output_root=inst, roots=roots)
+    if vault_cfg:
+        cfg["vaults"] = [vault_cfg]
+        if "V" not in cfg["enabled_tiers"]: cfg["enabled_tiers"].append("V")
     cfg["ollama"].update(chat_model=chat, embed_model=embed)
     cfg["answer_backend"] = backend
     wjson(J("config", "secondbrain.json"), cfg)

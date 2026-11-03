@@ -7,6 +7,7 @@ A local-first, agent-agnostic "second brain": it indexes folders you choose and 
 |---|---|
 | [Overview & components](wiki/01-overview.md) | What the system is, its parts, and how they connect ([diagram](diagrams/architecture.html)) |
 | [Setup wizard](wiki/02-setup-wizard.md) | What `./setup.sh` asks, checks, refuses and writes ([diagram](diagrams/setup-wizard.html)) |
+| [Notes vault](wiki/15-notes-vault.md) | One folder of Markdown notes (Obsidian or any editor) with category folders and templates, read as knowledge |
 | [Desktop installer](wiki/14-desktop-installer.md) | Point-and-click setup: prerequisites, folder picker, models/agents, create, run |
 | [Requirements](REQUIREMENTS.md) | Tools to install, models, hardware guidance |
 | [Setup prompt for an AI agent](PROMPT.md) | Copy-paste prompt that has Claude Code, Codex or a local agent plan and run the setup |
@@ -19,7 +20,7 @@ A local-first, agent-agnostic "second brain": it indexes folders you choose and 
 | [Retrieval](wiki/05-retrieval.md) | Hybrid BM25 + vectors, RRF, Spanish questions, self-questions |
 | [**The Judgment Call**](wiki/06-judgment-call.md) | How each answer is decided: answer with sources, or abstain ([diagram](diagrams/judgment-call.html)) |
 | [Second opinion with Claude](wiki/07-second-opinion.md) | `sb validate`: an on-demand check of abstentions |
-| [Knowledge maps & system card](wiki/08-knowledge.md) | Project map, project cards, the system card |
+| [Knowledge maps & system card](wiki/08-knowledge.md) | Project map, project cards, vault index, the system card (laid out as a vault) |
 | [Skills](wiki/09-skills.md) | Turning SKILL.md / prompt files into reviewed local procedures |
 
 ## Operating it

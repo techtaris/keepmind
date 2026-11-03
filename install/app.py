@@ -81,6 +81,7 @@ def state():
         pv = False
     prereqs.append({"id": "pywebview", "label": "pywebview (native window)", "required": False, "ok": pv, "detail": "installed" if pv else "optional: without it this UI opens in your browser"})
     return {"os": OS, "home": HOME, "repo": REPO, "fts5_here": fts, "default_instance": os.path.join(HOME, "SecondBrain-Instance"),
+            "default_vault": os.path.join(HOME, "SecondBrainVault"),
             "prereqs": prereqs, "ollama_models": models, "installer": "install.ps1" if IS_WIN else "install.sh"}
 
 # ----------------------------------------------------------------------------- jobs (allow-listed commands, streamed output)
@@ -117,7 +118,8 @@ def instance_cmd(inst, args):
     return ["bash", os.path.join(inst, "bin", "sb-sandboxed")] + args, None
 
 # ----------------------------------------------------------------------------- native folder picker
-PICKER_TITLES = {"source": "Choose a source folder for the Second Brain", "instance": "Choose (or create) the instance folder"}
+PICKER_TITLES = {"source": "Choose a source folder for the Second Brain", "instance": "Choose (or create) the instance folder",
+                 "vault": "Choose the notes vault folder (Obsidian or any Markdown editor)"}
 
 def pick_folder(kind):
     """F2: the dialog title is chosen server-side from a fixed list and handed to the OS as data, never as code."""
@@ -161,7 +163,17 @@ def create(body):
             if not r.get("confirmed"): raise ValueError(f"{p}: {msg}; tick its confirmation box to include it")
             allow_sensitive = True
         roots.append(p)
-    if not roots: raise ValueError("Add at least one source folder.")
+    vmode = body.get("vault_mode", "none")
+    if vmode not in ("new", "existing", "none"): raise ValueError("unknown vault mode")
+    vpath = str(body.get("vault_path", "")).strip()
+    if vmode != "none":
+        vp, status, msg = wiz.classify_root(vpath, must_exist=(vmode == "existing"))
+        if status == "refused": raise ValueError(f"Vault {vp}: {msg}")
+        if status == "sensitive":
+            if not body.get("vault_confirmed"): raise ValueError(f"Vault {vp}: {msg}; tick its confirmation box")
+            allow_sensitive = True
+        vpath = vp
+    if not roots and vmode == "none": raise ValueError("Add at least one source folder or a notes vault.")
     provider = body.get("provider", "ollama"); operator = body.get("operator", "none")
     if provider not in ("ollama", "anthropic", "openai"): raise ValueError("unknown backend")
     if operator not in ("none", "claude-code", "codex"): raise ValueError("unknown operator")
@@ -171,7 +183,9 @@ def create(body):
     env = {"SB_NONINTERACTIVE": "1", "SB_INSTANCE": inst, "SB_ROOTS": os.pathsep.join(roots), "SB_PROVIDER": provider,
            "SB_OPERATOR": operator, "SB_CHAT_MODEL": chat or "llama3.1:8b", "SB_EMBED_MODEL": embed,
            "SB_ACCEPT": "yes" if body.get("granted") else "no", "SB_CONTINUE_MISSING": "yes" if body.get("continue_missing") else "no",
-           "SB_ALLOW_SENSITIVE": "yes" if allow_sensitive else "no"}
+           "SB_ALLOW_SENSITIVE": "yes" if allow_sensitive else "no", "SB_VAULT_MODE": vmode, "SB_VAULT_PATH": vpath,
+           "SB_VAULT_COMPLETE": "yes" if body.get("vault_complete", True) else "no",
+           "SB_VAULT_PERSONAL": "yes" if body.get("vault_personal") else "no", "SB_VAULT_CLIENTS": "yes" if body.get("vault_clients", True) else "no"}
     if not body.get("granted"): raise ValueError("Confirm the permission summary first.")
     if provider != "ollama":
         hm, ke = str(body.get("hosted_model", "")).strip(), str(body.get("api_key_env", "")).strip()
@@ -219,6 +233,11 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 return self._send(200, {"path": p})
             if self.path == "/api/check-folder":
                 ap, status, msg = wiz.classify_root(str(body.get("path", ""))); return self._send(200, {"path": ap, "status": status, "message": msg})
+            if self.path == "/api/vault-plan":
+                mode = body.get("mode", "new")
+                ap, status, msg = wiz.classify_root(str(body.get("path", "")), must_exist=(mode == "existing"))
+                missing = len(wiz.vault_init.plan(ap)) if status != "refused" else 0
+                return self._send(200, {"path": ap, "status": status, "message": msg, "missing": missing, "exists": os.path.isdir(ap)})
             if self.path == "/api/install":
                 comp = body.get("component")
                 if comp not in COMPONENTS: return self._send(400, {"error": "unknown component"})
@@ -231,7 +250,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 inst = os.path.abspath(os.path.expanduser(str(body.get("instance", ""))))
                 if not os.path.isfile(os.path.join(inst, "config", "secondbrain.json")): return self._send(400, {"error": "not a Second Brain instance folder"})
                 action = body.get("action")
-                acts = {"doctor": ["doctor", "--record"], "ingest": ["ingest"], "eval": ["eval", "--system"], "map": ["knowledge", "map"], "stats": ["stats"]}
+                acts = {"doctor": ["doctor", "--record"], "ingest": ["ingest"], "eval": ["eval", "--system"], "map": ["knowledge", "map"], "vault": ["knowledge", "vault"], "stats": ["stats"]}
                 if action == "pipeline":
                     if IS_WIN: return self._send(400, {"error": "full pipeline script is bash-only; run ingest and eval on Windows"})
                     return self._send(200, {"job": start_job("Full pipeline", ["bash", os.path.join(inst, "bin", "run-all.sh")], cwd=inst)})

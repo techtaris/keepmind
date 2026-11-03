@@ -12,6 +12,7 @@ Only the folders listed in `roots` are read, recursively, and only **read**: the
 |---|---|---|
 | **A** | Your own projects and notes | On |
 | **A-docs** | Folders where only `*.md` / `*.txt` are indexed (e.g. a model store) | On with A |
+| **V** | Notes in a [notes vault](15-notes-vault.md) (category folders; Personal and, if you choose, Clients/Sales excluded) | On when a vault is configured |
 | **W** | Work / client / employer material | Off — enable only with authorization |
 | **P** | Personal or raw data: chat exports, transcripts, career files | Off |
 | **R** | Third-party / downloaded repositories | Off |
