@@ -1,0 +1,4 @@
+; local mode: loopback only (Ollama + web UI); no DNS, no internet
+(allow network-outbound (remote ip "localhost:*"))
+(allow network-bind (local ip "localhost:*"))
+(allow network-inbound (local ip "localhost:*"))

@@ -1,0 +1,22 @@
+# Personal data never belongs in this repo. Instances live OUTSIDE the repo (setup_wizard.py enforces it);
+# these patterns are a second line of defence.
+*.sqlite
+*.sqlite3
+*.db
+*.jsonl
+*.log
+.env
+.env.*
+instance/
+*-Instance/
+index/
+logs/
+backups/
+knowledge/
+skills/candidates/
+skills/approved/
+eval/results/
+tmp/
+__pycache__/
+*.pyc
+.DS_Store

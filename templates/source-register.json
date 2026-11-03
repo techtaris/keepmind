@@ -1,0 +1,10 @@
+{
+  "_doc": "Tier per path prefix, RELATIVE TO YOUR HOME FOLDER. First match wins. Unlisted paths default to tier A. Only tiers in config enabled_tiers are indexed (A by default). Tiers: A own projects/notes, A-docs (only *.md/*.txt), W work/client (keep off unless authorized), P personal/raw (chats, transcripts, career), R third-party repos, X never, D derived knowledge.",
+  "_examples": [
+    {"prefix": "Code/third-party-repo", "tier": "R", "label": "downloaded open-source repo"},
+    {"prefix": "Code/ClientX", "tier": "W", "label": "client work - needs authorization"},
+    {"prefix": "Notes/chat-exports", "tier": "P", "label": "raw chat exports"},
+    {"prefix": "Models", "tier": "A-docs", "label": "model store: docs only"}
+  ],
+  "rules": []
+}

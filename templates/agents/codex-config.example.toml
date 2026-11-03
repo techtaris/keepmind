@@ -1,0 +1,5 @@
+# Example Codex CLI settings for the second-brain operator (copy the relevant keys into your Codex config).
+# Verify key names against your installed Codex version.
+sandbox_mode = "read-only"        # Codex may read but not write; sb writes only through its own sandbox
+approval_policy = "on-request"    # ask before running anything outside the allowed commands
+# Allowed workflow: {{SB}} query "..." / {{SB}} ask "..."

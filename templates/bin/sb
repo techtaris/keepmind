@@ -1,0 +1,10 @@
+#!/bin/bash
+# Instance launcher: isolated Python, offline env, umask 077. Reads config/env.sh written by setup_wizard.py.
+set -euo pipefail
+INST="$(cd "$(dirname "$0")/.." && pwd)"
+source "$INST/config/env.sh"
+umask 077
+export SB_ROOT="$INST" TMPDIR="$INST/tmp" DO_NOT_TRACK=1 HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 PIP_NO_INDEX=1
+export NO_PROXY="127.0.0.1,localhost" no_proxy="127.0.0.1,localhost"
+if [ "${SB_PROVIDER:-ollama}" = "ollama" ]; then unset HTTP_PROXY HTTPS_PROXY ALL_PROXY http_proxy https_proxy all_proxy; fi
+exec "$SB_PYTHON" -I -B "$SB_CODE/sb.py" "$@"

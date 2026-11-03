@@ -1,0 +1,52 @@
+# Second Brain (local-first, agent-agnostic)
+
+A private, searchable "second brain" over folders **you** choose. It answers questions with citations to your own files, or says **"Not in the second brain."**
+
+- **Local by default:** Ollama runs the LLM and the embeddings on `127.0.0.1`, and a macOS sandbox blocks the internet.
+- **Optional hosted answers:** Claude (Anthropic API) or OpenAI (the provider behind Codex), with a clear disclosure.
+- **Optional operator agent:** Claude Code or Codex can use the brain through the `sb` command, under generated permission rules.
+- **Optional second opinion:** `sb validate` asks Claude (your own Claude Code login, on demand) whether a "Not in the second brain" answer was right.
+
+📚 **Documentation wiki:** [docs/README.md](docs/README.md), including [the Judgment Call](docs/wiki/06-judgment-call.md) and interactive [diagrams](docs/README.md#diagrams).
+- **No personal data in this repo.** Your configuration, index and logs live in a separate *instance* folder created by the setup wizard.
+
+## Quick start (macOS)
+
+```bash
+# 1. Install the required tools (see docs/REQUIREMENTS.md), then pull two models:
+ollama pull nomic-embed-text          # embeddings (always local)
+ollama pull llama3.1:8b               # or any local chat model you prefer
+
+# 2. Run the wizard: it asks for your folders, backend, operator agent and permissions
+./setup.sh
+
+# 3. First run (paths are printed by the wizard)
+~/SecondBrain-Instance/bin/sb-sandboxed doctor --record
+bash ~/SecondBrain-Instance/bin/run-all.sh
+~/SecondBrain-Instance/bin/sb-sandboxed ask "What is project X about?"
+```
+
+## What the wizard asks
+
+| Question | Default |
+|---|---|
+| Answer backend | `ollama` (local). Also `anthropic` or `openai` (hosted) |
+| Operator agent | `none`. Also `claude-code` or `codex` (generates `CLAUDE.md` + settings or `AGENTS.md`) |
+| Instance folder | `~/SecondBrain-Instance` (must be outside this repo) |
+| Source folders | You list them. Credential, app-data and cloud-sync folders are refused; Desktop/Documents/Downloads need confirmation |
+| Models | Embedding model + local chat model (or a hosted model id + the *name* of the environment variable holding the API key) |
+| Permissions | A summary of READ / WRITE / NETWORK / NEVER-READ / sandbox; nothing is created until you say yes |
+
+## Layout
+
+| Path | Contents |
+|---|---|
+| `setup.sh`, `setup_wizard.py` | Setup |
+| `src/sb.py` | The engine: ingest, search, ask, serve, doctor, eval, knowledge, skills, backup (Python standard library only) |
+| `templates/` | Config, exclusions, sandbox profile, prompts, launchers, eval fixtures, operator-agent files |
+| `docs/` | [Wiki home](docs/README.md) · `wiki/` feature pages · `diagrams/` (Archify HTML) · `REQUIREMENTS.md`, `SECURITY.md`, `AGENTS.md`, `RUNBOOK.md` |
+| `docs/PROMPT.md` | A ready-to-use prompt that has an AI agent plan and set up a second brain with this repo |
+
+## License
+
+[MIT](LICENSE) © 2026 TECHTARIS. Diagrams embed third-party components: see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

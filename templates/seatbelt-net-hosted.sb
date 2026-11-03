@@ -1,0 +1,6 @@
+; hosted mode (chosen in setup): loopback + HTTPS to the answer provider + DNS
+(allow network-outbound (remote ip "localhost:*"))
+(allow network-bind (local ip "localhost:*"))
+(allow network-inbound (local ip "localhost:*"))
+(allow network-outbound (remote tcp "*:443"))
+(allow network-outbound (remote unix-socket (path-literal "/private/var/run/mDNSResponder")))

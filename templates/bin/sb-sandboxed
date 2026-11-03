@@ -1,0 +1,9 @@
+#!/bin/bash
+# Run sb inside the OS boundary (macOS Seatbelt). On other systems it warns and runs unsandboxed (doctor reports FAIL).
+set -euo pipefail
+INST="$(cd "$(dirname "$0")/.." && pwd)"
+if [ -x /usr/bin/sandbox-exec ]; then
+  exec /usr/bin/sandbox-exec -f "$INST/config/seatbelt/secondbrain.sb" /usr/bin/env SB_SANDBOXED=1 /bin/bash "$INST/bin/sb" "$@"
+fi
+echo "WARNING: no OS sandbox available on this system; running sb without it." >&2
+exec /bin/bash "$INST/bin/sb" "$@"

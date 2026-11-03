@@ -1,0 +1,8 @@
+#!/bin/bash
+# On-demand second opinion from Claude (Claude Code CLI, your own login) on "Not in the second brain" answers.
+# Runs OUTSIDE the offline sandbox because the CLI needs the network and its login files.
+# sb itself reads only this instance's index and logs here; it shows what will be sent and asks before sending.
+set -euo pipefail
+INST="$(cd "$(dirname "$0")/.." && pwd)"
+export SB_VALIDATE=1
+exec /bin/bash "$INST/bin/sb" validate "$@"

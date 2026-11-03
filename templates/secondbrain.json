@@ -1,0 +1,70 @@
+{
+  "version": 1,
+  "home": "",
+  "output_root": "",
+  "roots": [],
+  "enabled_tiers": [
+    "A"
+  ],
+  "ollama": {
+    "url": "http://127.0.0.1:11434",
+    "chat_model": "",
+    "embed_model": "nomic-embed-text",
+    "timeout_s": 300,
+    "think": false
+  },
+  "answer_backend": {
+    "provider": "ollama"
+  },
+  "ui": {
+    "host": "127.0.0.1",
+    "port": 8765
+  },
+  "chunk": {
+    "target_tokens": 650,
+    "max_tokens": 800,
+    "overlap_ratio": 0.15,
+    "code_lines": 100,
+    "code_overlap": 20
+  },
+  "retrieval": {
+    "bm25_k": 40,
+    "vec_k": 40,
+    "rrf_k": 60,
+    "top_n": 8,
+    "per_file_max": 3,
+    "context_token_budget": 5000,
+    "min_fused_score": 0.0,
+    "min_vec_cos": 0.45
+  },
+  "answer": {
+    "temperature": 0.1,
+    "seed": 42,
+    "max_tokens": 800,
+    "not_found": "Not in the second brain."
+  },
+  "logs": {
+    "max_bytes": 10485760,
+    "backups": 5,
+    "query_log_text": true
+  },
+  "validation": {
+    "provider": "claude-code-cli",
+    "claude_bin": "",
+    "model": "",
+    "max_excerpts": 8,
+    "max_chars_per_excerpt": 2500,
+    "timeout_s": 300
+  },
+  "skills": {
+    "_doc": "SQL LIKE patterns (over absolute paths) that mark indexed files as skill/prompt candidates for `sb skills import`. Add your own folders, e.g. \"%/MyPrompts/%.md\".",
+    "path_patterns": [
+      "%/SKILL.md",
+      "%.prompt.md",
+      "%/prompts/%.md",
+      "%/workflows/%.md",
+      "%/.claude/commands/%.md",
+      "%/.github/prompts/%.md"
+    ]
+  }
+}
