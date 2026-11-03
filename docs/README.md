@@ -7,6 +7,7 @@ A local-first, agent-agnostic "second brain": it indexes folders you choose and 
 |---|---|
 | [Overview & components](wiki/01-overview.md) | What the system is, its parts, and how they connect ([diagram](diagrams/architecture.html)) |
 | [Setup wizard](wiki/02-setup-wizard.md) | What `./setup.sh` asks, checks, refuses and writes ([diagram](diagrams/setup-wizard.html)) |
+| [Desktop installer](wiki/14-desktop-installer.md) | Point-and-click setup: prerequisites, folder picker, models/agents, create, run |
 | [Requirements](REQUIREMENTS.md) | Tools to install, models, hardware guidance |
 | [Setup prompt for an AI agent](PROMPT.md) | Copy-paste prompt that has Claude Code, Codex or a local agent plan and run the setup |
 

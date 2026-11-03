@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Second Brain Setup</title>
+<style>
+:root{--bg:#f6f6f3;--card:#fff;--fg:#1c1c1a;--mut:#6a6a64;--bd:#e3e3dc;--acc:#2f5d50;--acc-fg:#fff;--ok:#2e7d4f;--warn:#a8670a;--bad:#b3261e;--code:#f0f0ea}
+@media (prefers-color-scheme:dark){:root{--bg:#151514;--card:#1f1f1d;--fg:#ececE8;--mut:#a2a29b;--bd:#34342f;--acc:#7fb8a6;--acc-fg:#10201b;--ok:#7fcf9c;--warn:#e0a84a;--bad:#ff8a80;--code:#262623}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 -apple-system,"Segoe UI",system-ui,sans-serif}
+main{max-width:920px;margin:0 auto;padding:28px 16px 140px}
+h1{font-size:22px;margin:0}
+.sub{color:var(--mut);margin:4px 0 22px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:18px 20px;margin-bottom:16px}
+.card h2{font-size:16px;margin:0 0 4px;display:flex;gap:10px;align-items:center}
+.num{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--acc);color:var(--acc-fg);font-size:13px;font-weight:700}
+.hint{color:var(--mut);font-size:13px;margin:0 0 12px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+td{padding:7px 6px;border-top:1px solid var(--bd);vertical-align:middle}
+td.st{width:84px;font-weight:600}
+.ok{color:var(--ok)}.warn{color:var(--warn)}.bad{color:var(--bad)}.mut{color:var(--mut)}
+button{font:inherit;font-size:13px;padding:7px 12px;border-radius:8px;border:1px solid var(--bd);background:var(--card);color:var(--fg);cursor:pointer}
+button.primary{background:var(--acc);color:var(--acc-fg);border-color:transparent;font-weight:600;padding:9px 16px}
+button:disabled{opacity:.5;cursor:not-allowed}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:8px 0}
+label{font-size:13px;color:var(--mut)}
+input[type=text],select{font:inherit;font-size:14px;padding:7px 9px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--fg);min-width:220px;flex:1}
+.field{display:flex;flex-direction:column;gap:4px;flex:1;min-width:220px}
+.folder{display:flex;gap:10px;align-items:center;padding:7px 0;border-top:1px solid var(--bd);font-size:14px}
+.folder code{flex:1;word-break:break-all}
+code,pre{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12.5px}
+pre.summary{background:var(--code);border-radius:8px;padding:12px;white-space:pre-wrap;margin:8px 0}
+.radio{display:flex;gap:16px;flex-wrap:wrap;font-size:14px}
+.note{font-size:12.5px;color:var(--warn);margin-top:4px}
+#log{position:fixed;left:0;right:0;bottom:0;max-height:34vh;background:var(--code);border-top:1px solid var(--bd);display:none}
+#log header{display:flex;justify-content:space-between;align-items:center;padding:6px 16px;font-size:13px;border-bottom:1px solid var(--bd)}
+#log pre{margin:0;padding:10px 16px;overflow:auto;max-height:calc(34vh - 36px);white-space:pre-wrap}
+</style>
+</head>
+<body>
+<main>
+  <h1>Second Brain Setup</h1>
+  <p class="sub">Local-first. Your folders stay read-only; nothing is installed or created until you click.</p>
+
+  <section class="card">
+    <h2><span class="num">1</span> Prerequisites</h2>
+    <p class="hint">Installs run <code id="installer">install.sh</code> and show each command in the log below. Some need your password or an admin prompt.</p>
+    <table id="prereqs"></table>
+    <div class="row"><button id="refresh">Re-check</button></div>
+  </section>
+
+  <section class="card">
+    <h2><span class="num">2</span> Source folders (isolated vaults)</h2>
+    <p class="hint">Only these folders are read, recursively and read-only. Credential, app-data and cloud-sync folders are refused.</p>
+    <div id="folders"></div>
+    <div class="row"><button id="addFolder">+ Add folder…</button><span id="folderMsg" class="mut"></span></div>
+    <div class="row" style="margin-top:14px">
+      <div class="field"><label for="instance">Instance folder (config, index, logs — outside the repo)</label><input type="text" id="instance"></div>
+      <button id="pickInstance" style="align-self:flex-end">Choose…</button>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2><span class="num">3</span> Models &amp; agents</h2>
+    <p class="hint">Who writes the answers, and which assistant (if any) operates the second brain.</p>
+    <div class="radio" id="backend">
+      <label><input type="radio" name="provider" value="ollama" checked> Local LLM (Ollama, fully offline)</label>
+      <label><input type="radio" name="provider" value="anthropic"> Claude API</label>
+      <label><input type="radio" name="provider" value="openai"> OpenAI API</label>
+    </div>
+    <div class="row">
+      <div class="field"><label for="chat">Local chat model (Ollama)</label><input type="text" id="chat" list="ollamaModels" placeholder="e.g. llama3.1:8b"></div>
+      <div class="field"><label for="embed">Embedding model (Ollama, always local)</label><input type="text" id="embed" list="ollamaModels" value="nomic-embed-text"></div>
+      <datalist id="ollamaModels"></datalist>
+    </div>
+    <div class="row" id="hostedRow" style="display:none">
+      <div class="field"><label for="hosted">Hosted model id</label><input type="text" id="hosted"></div>
+      <div class="field"><label for="keyenv">Environment variable that holds the API key (name only)</label><input type="text" id="keyenv"></div>
+    </div>
+    <p class="note" id="hostedNote" style="display:none">Hosted backend: the top retrieved excerpts of your files are sent to the provider for each question.</p>
+    <div class="row">
+      <div class="field"><label for="operator">Operator agent (optional)</label>
+        <select id="operator"><option value="none">None — use sb / web UI directly</option><option value="claude-code">Claude Code CLI</option><option value="codex">Codex CLI</option></select></div>
+      <div class="row" style="flex:1"><button id="pullModels">Pull these Ollama models</button></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2><span class="num">4</span> Review permissions &amp; create</h2>
+    <pre class="summary" id="summary"></pre>
+    <div class="row"><label><input type="checkbox" id="granted"> I grant these permissions</label>
+      <label><input type="checkbox" id="contMissing"> Continue even if optional tools are missing</label></div>
+    <div class="row"><button class="primary" id="create">Create instance</button><span id="createMsg" class="bad"></span></div>
+  </section>
+
+  <section class="card">
+    <h2><span class="num">5</span> Run</h2>
+    <p class="hint">Uses the instance's sandboxed launcher (macOS). Start with Doctor: every line should PASS.</p>
+    <div class="row">
+      <button data-act="doctor">Doctor</button><button data-act="ingest">Ingest</button><button data-act="eval">Evaluate</button>
+      <button data-act="pipeline" id="pipelineBtn">Full pipeline</button><button data-act="stats">Stats</button><button id="openInst">Open instance folder</button>
+    </div>
+    <div class="row"><input type="text" id="question" placeholder="Ask your second brain…"><button data-act="ask">Ask</button></div>
+  </section>
+</main>
+
+<div id="log"><header><b id="logTitle">Log</b><span><span id="logStatus" class="mut"></span> <button id="logClose">Hide</button></span></header><pre id="logBody"></pre></div>
+
+<script>
+const T = new URLSearchParams(location.search).get('t');
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const api = async (path, body) => {
+  const r = await fetch(path, body === undefined ? {headers:{'X-SB-Token':T}} : {method:'POST', headers:{'Content-Type':'application/json','X-SB-Token':T}, body:JSON.stringify(body)});
+  const d = await r.json(); if (!r.ok) throw new Error(d.error || r.statusText); return d;
+};
+let S = null, folders = [];
+
+async function load() {
+  S = await api('/api/state');
+  $('installer').textContent = S.installer;
+  if (!$('instance').value) $('instance').value = S.default_instance;
+  if (S.os === 'Windows') { $('pipelineBtn').disabled = true; $('pipelineBtn').title = 'bash-only; use Ingest and Evaluate'; }
+  $('prereqs').innerHTML = S.prereqs.map(p => {
+    const st = p.ok ? '<span class="ok">✓ ready</span>' : (p.required ? '<span class="bad">✗ missing</span>' : '<span class="warn">○ optional</span>');
+    const btn = (p.installable === false || p.ok) ? '' : `<button data-install="${p.id}">Install</button>`;
+    return `<tr><td class="st">${st}</td><td><b>${esc(p.label)}</b><br><span class="mut">${esc(p.detail)}</span></td><td style="text-align:right">${btn}</td></tr>`;
+  }).join('');
+  $('ollamaModels').innerHTML = S.ollama_models.map(m => `<option value="${esc(m)}">`).join('');
+  if (!$('chat').value) $('chat').value = S.ollama_models.find(m => !/embed/i.test(m)) || 'llama3.1:8b';
+  summary();
+}
+
+function renderFolders() {
+  $('folders').innerHTML = folders.map((f, i) => `<div class="folder">
+    <span class="${f.status==='ok'?'ok':'warn'}">${f.status==='ok'?'✓':'!'}</span><code>${esc(f.path)}</code>
+    ${f.status==='sensitive' ? `<label><input type="checkbox" data-confirm="${i}" ${f.confirmed?'checked':''}> include (${esc(f.message)})</label>` : ''}
+    <button data-remove="${i}">Remove</button></div>`).join('') || '<p class="mut" style="font-size:14px">No folders yet.</p>';
+  summary();
+}
+
+function provider() { return document.querySelector('input[name=provider]:checked').value; }
+
+function summary() {
+  if (!S) return;
+  const p = provider(), inst = $('instance').value.trim(), roots = folders.filter(f => f.status === 'ok' || f.confirmed).map(f => f.path);
+  $('hostedRow').style.display = $('hostedNote').style.display = p === 'ollama' ? 'none' : '';
+  if (p !== 'ollama' && !$('keyenv').value) $('keyenv').value = p === 'anthropic' ? 'ANTHROPIC_API_KEY' : 'OPENAI_API_KEY';
+  const op = $('operator').value;
+  $('summary').textContent =
+`READ (only):   ${roots.length ? roots.join('\n               ') : '(add source folders)'}
+               + the instance folder and the Second Brain code
+WRITE (only):  ${inst || '(choose an instance folder)'}
+NETWORK:       ${p === 'ollama' ? 'loopback only (127.0.0.1): Ollama + local web UI. Internet denied, including DNS.'
+                                : `loopback + HTTPS to the ${p} API. Retrieved excerpts of your files are sent to ${p}.`}
+NEVER READ:    .env*, keys/certificates, credential files, browser profiles, .git internals,
+               dependency/build folders, databases, email/chat exports; symlinks never followed.
+OS SANDBOX:    ${S.os === 'Darwin' ? 'macOS Seatbelt profile (enforced by the OS)' : 'NOT AVAILABLE on this OS (rules enforced in code only)'}
+MODELS:        chat ${p === 'ollama' ? ($('chat').value || '?') + ' (Ollama)' : ($('hosted').value || '?') + ` (${p}, key from $${$('keyenv').value})`} · embeddings ${$('embed').value} (Ollama)
+OPERATOR:      ${op === 'none' ? 'none' : op + ' — rule files generated in <instance>/agent/; what it reads goes to its provider'}`;
+}
+
+async function watch(job, title) {
+  const log = $('log'); log.style.display = 'block'; $('logTitle').textContent = title; $('logBody').textContent = ''; $('logStatus').textContent = 'running…';
+  let since = 0;
+  for (;;) {
+    const d = await api(`/api/job/${job}?since=${since}`);
+    if (since === 0) $('logBody').textContent += `$ ${d.cmd}\n`;
+    if (d.lines.length) { $('logBody').textContent += d.lines.join('\n') + '\n'; $('logBody').scrollTop = 1e9; }
+    since = d.next;
+    if (d.done) { $('logStatus').innerHTML = d.rc === 0 ? '<span class="ok">done</span>' : `<span class="bad">exit ${d.rc}</span>`; return d.rc; }
+    await new Promise(r => setTimeout(r, 700));
+  }
+}
+
+document.addEventListener('click', async e => {
+  const t = e.target;
+  try {
+    if (t.dataset.install) {
+      if (!confirm(`Install "${t.dataset.install}" now? The exact command is shown in the log.`)) return;
+      const {job} = await api('/api/install', {component: t.dataset.install, chat_model: $('chat').value, embed_model: $('embed').value});
+      await watch(job, `Install: ${t.dataset.install}`); load();
+    } else if (t.dataset.remove !== undefined) { folders.splice(+t.dataset.remove, 1); renderFolders();
+    } else if (t.dataset.act) {
+      const {job} = await api('/api/run', {action: t.dataset.act, instance: $('instance').value, question: $('question').value});
+      watch(job, t.textContent);
+    }
+  } catch (err) { alert(err.message); }
+});
+document.addEventListener('change', e => {
+  if (e.target.dataset.confirm !== undefined) { folders[+e.target.dataset.confirm].confirmed = e.target.checked; summary(); }
+  else summary();
+});
+document.addEventListener('input', summary);
+$('refresh').onclick = load;
+$('logClose').onclick = () => $('log').style.display = 'none';
+$('addFolder').onclick = async () => {
+  $('folderMsg').textContent = 'Waiting for the folder dialog…';
+  try {
+    const d = await api('/api/pick-folder', {title: 'Choose a source folder for the Second Brain', check: true});
+    $('folderMsg').textContent = '';
+    if (!d.path) return;
+    if (d.status === 'refused') { $('folderMsg').innerHTML = `<span class="bad">${esc(d.path)}: ${esc(d.message)}</span>`; return; }
+    if (!folders.some(f => f.path === d.path)) folders.push({...d, confirmed: false});
+    renderFolders();
+  } catch (err) { $('folderMsg').textContent = err.message; }
+};
+$('pickInstance').onclick = async () => {
+  const d = await api('/api/pick-folder', {title: 'Choose (or create) the instance folder'});
+  if (d.path) { $('instance').value = d.path; summary(); }
+};
+$('openInst').onclick = () => api('/api/open-folder', {path: $('instance').value}).catch(err => alert(err.message));
+$('pullModels').onclick = async () => {
+  if (!confirm(`Pull ${$('embed').value} and ${$('chat').value} with Ollama? This downloads several GB.`)) return;
+  const {job} = await api('/api/install', {component: 'models', chat_model: $('chat').value, embed_model: $('embed').value});
+  await watch(job, 'Pull Ollama models'); load();
+};
+$('create').onclick = async () => {
+  $('createMsg').textContent = '';
+  try {
+    const {job, instance} = await api('/api/create', {
+      instance: $('instance').value, roots: folders.map(f => ({path: f.path, confirmed: f.confirmed})),
+      provider: provider(), chat_model: $('chat').value, embed_model: $('embed').value,
+      hosted_model: $('hosted').value, api_key_env: $('keyenv').value, operator: $('operator').value,
+      granted: $('granted').checked, continue_missing: $('contMissing').checked});
+    const rc = await watch(job, 'Create instance');
+    if (rc === 0) $('instance').value = instance;
+  } catch (err) { $('createMsg').textContent = err.message; }
+};
+renderFolders(); load().catch(err => document.body.insertAdjacentHTML('afterbegin', `<p class="bad" style="padding:16px">${esc(err.message)}</p>`));
+</script>
+</body>
+</html>

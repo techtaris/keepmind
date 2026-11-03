@@ -5,7 +5,7 @@ Creates an *instance* folder (config, index, logs, launchers) for one person, fr
 The repo itself never stores personal paths or data.
 
 Interactive:      python3 setup_wizard.py
-Non-interactive:  SB_NONINTERACTIVE=1 SB_INSTANCE=... SB_ROOTS="/a:/b" [SB_PROVIDER=ollama|anthropic|openai]
+Non-interactive:  SB_NONINTERACTIVE=1 SB_INSTANCE=... SB_ROOTS="/a:/b" (";" on Windows) [SB_PROVIDER=ollama|anthropic|openai]
                   [SB_CHAT_MODEL=...] [SB_EMBED_MODEL=...] [SB_HOSTED_MODEL=...] [SB_API_KEY_ENV=...]
                   [SB_OPERATOR=none|claude-code|codex] [SB_ACCEPT=yes] python3 setup_wizard.py
 """
@@ -16,10 +16,12 @@ TPL = os.path.join(REPO, "templates")
 HOME = os.path.expanduser("~")
 NONINT = os.environ.get("SB_NONINTERACTIVE") == "1"
 IS_MAC = platform.system() == "Darwin"
+IS_WIN = platform.system() == "Windows"
 
 # Paths that must never become source roots (credentials, app data, agent configs, cloud sync).
 FORBIDDEN = [".ssh", ".gnupg", ".aws", ".azure", ".kube", ".docker", ".config", ".claude", ".codex", ".ollama",
-             "Library", "Library/Mobile Documents", "Library/CloudStorage", ".Trash", "Applications"]
+             "Library", "Library/Mobile Documents", "Library/CloudStorage", ".Trash", "Applications",
+             "AppData", "OneDrive", "iCloudDrive", "Dropbox", "Google Drive"]
 SENSITIVE = ["Desktop", "Documents", "Downloads", "Pictures", "Movies", "Music"]  # allowed only with explicit confirmation
 
 def say(msg=""):
@@ -77,19 +79,28 @@ def ollama_models():
     except Exception:  # noqa: BLE001
         return []
 
-def validate_root(p):
+def classify_root(p):
+    """Pure check, no prompts (also used by the desktop installer). Returns (abs_path, status, message);
+    status is "ok", "sensitive" (allowed only with explicit confirmation) or "refused"."""
     p = os.path.abspath(os.path.expanduser(p))
-    if not os.path.isdir(p): return None, "not a directory"
-    if os.path.islink(p) or os.path.realpath(p) != p: return None, "is (or passes through) a symlink: give the real path"
-    if p == HOME or p == "/": return None, "too broad: choose specific folders"
-    rel = os.path.relpath(p, HOME)
+    if not os.path.isdir(p): return p, "refused", "not a directory"
+    if os.path.islink(p) or os.path.realpath(p) != p: return p, "refused", "is (or passes through) a symlink: give the real path"
+    if p == HOME or p == os.path.abspath(os.sep) or os.path.dirname(p) == p: return p, "refused", "too broad: choose specific folders"
+    if p == REPO or p.startswith(REPO + os.sep): return p, "refused", "this is the Second Brain code repository"
+    rel = os.path.relpath(p, HOME).replace(os.sep, "/")
     if not rel.startswith(".."):
         for f in FORBIDDEN:
-            if rel == f or rel.startswith(f + "/"): return None, f"forbidden location (~/{f}: credentials/app data/cloud sync)"
+            if rel == f or rel.startswith(f + "/"): return p, "refused", f"forbidden location (~/{f}: credentials, app data or cloud sync)"
         for f in SENSITIVE:
             if rel == f or rel.startswith(f + "/"):
-                if not yes(f"  ~/{f} usually holds personal data and macOS will ask for Files & Folders permission. Include {p}?", "SB_ALLOW_SENSITIVE"):
-                    return None, "skipped by you"
+                return p, "sensitive", f"~/{f} usually holds personal data" + (" and macOS will ask for Files & Folders permission" if IS_MAC else "")
+    return p, "ok", "ok"
+
+def validate_root(p):
+    p, status, msg = classify_root(p)
+    if status == "refused": return None, msg
+    if status == "sensitive" and not yes(f"  {msg}. Include {p}?", "SB_ALLOW_SENSITIVE"):
+        return None, "skipped by you"
     return p, "ok"
 
 # ----------------------------------------------------------------------------- writers
@@ -131,7 +142,7 @@ def main():
         sys.exit("The instance folder must be outside the repo, so personal data can never be committed.")
     roots = []
     if NONINT:
-        cand = [x for x in os.environ.get("SB_ROOTS", "").split(":") if x]
+        cand = [x for x in os.environ.get("SB_ROOTS", "").split(os.pathsep) if x]  # ":" on macOS/Linux, ";" on Windows
     else:
         say("  Source folders to index (read-only), one per line; empty line to finish.")
         cand = []
@@ -212,6 +223,12 @@ def main():
     wtext(J("config", "env.sh"), env)
     for n in ("sb", "sb-sandboxed", "sb-validate", "run-all.sh"):
         shutil.copy(os.path.join(TPL, "bin", n), J("bin", n)); os.chmod(J("bin", n), 0o700)
+    if IS_WIN:  # Windows launchers (no bash, no OS sandbox: doctor reports the sandbox checks as FAIL)
+        cmd = (f'@echo off\r\nset "SB_ROOT={inst}"\r\nset "TMPDIR={J("tmp")}"\r\nset "TEMP={J("tmp")}"\r\nset "DO_NOT_TRACK=1"\r\n'
+               f'set "NO_PROXY=127.0.0.1,localhost"\r\n"{py}" -I -B "{os.path.join(REPO, "src", "sb.py")}" %*\r\n')
+        wtext(J("bin", "sb.cmd"), cmd)
+        wtext(J("bin", "sb-sandboxed.cmd"), '@echo off\r\necho WARNING: no OS sandbox on Windows; running sb without it. 1>&2\r\ncall "%~dp0sb.cmd" %*\r\n')
+        wtext(J("bin", "sb-validate.cmd"), '@echo off\r\ncall "%~dp0sb.cmd" validate %*\r\n')
 
     # eval questions + fixtures
     q = json.loads(tpl("eval/questions.json"))
@@ -223,7 +240,9 @@ def main():
     wtext(J("eval", "fixtures", "secret-named", ".env"), "DB_PASSWORD=fixture-not-a-real-secret-123456\n")
     wtext(J("eval", "fixtures", "oos-denied", "canary.md"), "# Out-of-scope canary\n\nThe canary word is OOS-CANARY-42.\n")
     link = J("eval", "fixtures", "symlink", "linked-canary.md")
-    if not os.path.lexists(link): os.symlink("../oos-denied/canary.md", link)
+    if not os.path.lexists(link):
+        try: os.symlink("../oos-denied/canary.md", link)
+        except OSError: pass  # Windows without symlink privilege: the symlink test is skipped
 
     # operator agent files
     ctx = {"{{INSTANCE}}": inst, "{{ROOTS}}": "\n".join(f"- `{r}`" for r in roots), "{{SB}}": J("bin", "sb-sandboxed"),

@@ -10,7 +10,11 @@ A private, searchable "second brain" over folders **you** choose. It answers que
 📚 **Documentation wiki:** [docs/README.md](docs/README.md), including [the Judgment Call](docs/wiki/06-judgment-call.md) and interactive [diagrams](docs/README.md#diagrams).
 - **No personal data in this repo.** Your configuration, index and logs live in a separate *instance* folder created by the setup wizard.
 
-## Quick start (macOS)
+## Easiest: desktop installer
+
+macOS: double-click `install/start-ui.command`. Windows: double-click `install\start-ui.bat`. It walks you through prerequisites, folder selection, models/agents and permissions. See [install/README.md](install/README.md).
+
+## Quick start (macOS, terminal)
 
 ```bash
 # 1. Install the required tools (see docs/REQUIREMENTS.md), then pull two models:
@@ -41,7 +45,8 @@ bash ~/SecondBrain-Instance/bin/run-all.sh
 
 | Path | Contents |
 |---|---|
-| `setup.sh`, `setup_wizard.py` | Setup |
+| `setup.sh`, `setup_wizard.py` | Setup (terminal) |
+| `install/` | Desktop installer (`app.py` + `ui/index.html`) and prerequisite scripts (`install.sh`, `install.ps1`, `install.bat`) |
 | `src/sb.py` | The engine: ingest, search, ask, serve, doctor, eval, knowledge, skills, backup (Python standard library only) |
 | `templates/` | Config, exclusions, sandbox profile, prompts, launchers, eval fixtures, operator-agent files |
 | `docs/` | [Wiki home](docs/README.md) · `wiki/` feature pages · `diagrams/` (Archify HTML) · `REQUIREMENTS.md`, `SECURITY.md`, `AGENTS.md`, `RUNBOOK.md` |
