@@ -11,6 +11,7 @@ Run it under the sandbox so the boundary itself is tested: `<instance>/bin/sb-sa
 | sandbox: read of out-of-scope fixture denied | A deliberately denied test folder cannot be read |
 | sandbox: home listing denied | Nothing outside the allowed folders is readable |
 | sandbox: outbound network denied | In local mode, a connection to 1.1.1.1:443 fails (hosted mode reports that egress is allowed by your choice) |
+| sandbox: launching other programs denied | Inside the sandbox, `/usr/bin/true` and `/usr/bin/open` cannot be started: only the launchers and the instance Python may run. A FAIL that says the profile has no process-exec rules means the instance predates this check; re-run the setup wizard to regenerate the profile |
 | sandbox: reads allowed / writes allowed | Your folders are readable; the instance is writable |
 | ollama reachable · models installed | Ollama on 127.0.0.1:11434; required models present |
 | checksum: digest unchanged | Model digests match those recorded by `--record` (tamper/upgrade detection) |

@@ -114,6 +114,16 @@ def wtext(path, text, mode=0o600):
 def tpl(name):
     with open(os.path.join(TPL, name), encoding="utf-8") as f: return f.read()
 
+def sbpl_exec_rules():
+    """Allow-list of programs the sandboxed sb may launch: the launcher chain, lsof (doctor) and this Python."""
+    lits = ["/bin/bash", "/usr/bin/env", "/usr/bin/dirname", "/usr/sbin/lsof", sys.executable, os.path.realpath(sys.executable)]
+    prefix = os.path.realpath(sys.base_prefix)
+    q = lambda x: x.replace("\\", "\\\\").replace('"', '\\"')  # noqa: E731
+    broad = prefix in ("/", "/usr", "/usr/local", "/opt", "/opt/homebrew", "/Library") or prefix.count("/") < 3
+    sub = "" if broad else f' (subpath "{q(prefix)}")'  # a system-wide prefix would re-allow /usr/bin/*: literals only
+    return "(allow process-exec* " + " ".join(f'(literal "{q(x)}")' for x in dict.fromkeys(lits)) + sub + ")"
+
+
 def sbpl_subpaths(paths):
     return " ".join(f'(subpath "{p}")' for p in paths)
 
@@ -214,7 +224,7 @@ def main():
     py_prefix = sys.prefix if sys.prefix.startswith(HOME) else ""
     net = tpl("seatbelt-net-local.sb") if provider == "ollama" else tpl("seatbelt-net-hosted.sb")
     sb = tpl("seatbelt.sb").replace("{{HOME}}", HOME).replace("{{READ_SUBPATHS}}", sbpl_subpaths(reads + ([py_prefix] if py_prefix else []))) \
-        .replace("{{INSTANCE}}", inst).replace("{{NETWORK_RULES}}", net)
+        .replace("{{INSTANCE}}", inst).replace("{{NETWORK_RULES}}", net).replace("{{EXEC_RULES}}", sbpl_exec_rules())
     wtext(J("config", "seatbelt", "secondbrain.sb"), sb)
 
     # launchers

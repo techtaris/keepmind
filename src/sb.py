@@ -896,6 +896,17 @@ def doctor(args):
             open(J("tmp", ".probe"), "w").close(); os.remove(J("tmp", ".probe")); w = True
         except OSError: w = False
         chk("sandbox: writes allowed in the instance folder", w)
+        def exec_denied(path):
+            try:
+                subprocess.run([path], capture_output=True, timeout=10); return False
+            except PermissionError: return True
+            except OSError as e: return e.errno in (1, 13)
+        try: prof = open(J("config", "seatbelt", "secondbrain.sb"), encoding="utf-8").read()
+        except OSError: prof = ""
+        if "process-exec" in prof:
+            chk("sandbox: launching other programs denied (/usr/bin/true, /usr/bin/open)", exec_denied("/usr/bin/true") and exec_denied("/usr/bin/open"))
+        else:
+            chk("sandbox: launching other programs denied", False, "profile has no process-exec rules: re-run setup_wizard.py to regenerate it")
     else:
         chk("sandbox: running under Seatbelt profile", False, "run via tools/bin/sb-sandboxed to test the boundary")
     # ollama

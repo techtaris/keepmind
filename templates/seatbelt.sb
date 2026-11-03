@@ -13,3 +13,7 @@
 (allow file-write* (subpath "{{INSTANCE}}"))
 ; ---- synthetic out-of-scope fixture: proves the boundary works (sb doctor)
 (deny file-read* file-write* (subpath "{{INSTANCE}}/eval/fixtures/oos-denied"))
+; ---- processes: only the launchers and the instance Python may run (no other programs, no opening apps/URLs)
+(deny process-exec*)
+{{EXEC_RULES}}
+(deny mach-lookup (global-name "com.apple.coreservices.launchservicesd"))

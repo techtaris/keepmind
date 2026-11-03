@@ -8,6 +8,7 @@
 | Data leaving the machine | Local mode: Seatbelt denies all non-loopback network, including DNS; the code refuses non-loopback Ollama URLs | doctor: outbound to 1.1.1.1 denied; eval: non-loopback sockets = 0 |
 | Writing to your sources | Seatbelt allows writes only in the instance folder | doctor: write to the first source root denied |
 | Reading outside scope / via symlinks | Seatbelt denies reads in your home except the listed folders; symlinks are never followed | doctor: home listing denied, out-of-scope fixture denied; system test E23 |
+| Launching other programs (e.g. a shell command, `open` on a file or URL) | Seatbelt allows only bash/env/dirname/lsof and the instance's own Python to run, and blocks the macOS service that opens apps and URLs | doctor: launching other programs denied |
 | Prompt injection from indexed files | Sources wrapped as data; the answering LLM has no tools; JSON-constrained output; citations must quote the source (word-level verification); skills are imported as candidates and need human approval | eval G05 (injection fixture) |
 | Model tampering | Ollama model digests recorded on first run and compared by every `doctor` | doctor checksum lines |
 | Local web UI abuse (CSRF / DNS rebinding) | Bound to 127.0.0.1; Host-header allowlist; per-launch token; no CORS; no external assets | — |
