@@ -879,15 +879,26 @@ def answer(con, q, key="main", ns=None, cats=None):
         try:
             raw = chat(msgs, SCHEMA_ANSWER)
             out = json.loads(raw)
-        except Exception as e:  # noqa: BLE001
-            err(f"chat/json: {e}"); out = {"status": "not_in_second_brain", "answer": "", "citations": []}
+        except Exception as e:  # noqa: BLE001 - usually a reply cut off at max_tokens (long lists): retry once, shorter
+            err(f"chat/json: {e}")
+            if attempt == 0:
+                res["reason"] = "reply cut off or invalid JSON"
+                if raw: msgs.append({"role": "assistant", "content": raw[:2000]})
+                msgs.append({"role": "user", "content": "Your reply was cut off or was not valid JSON. Reply again with valid JSON only: "
+                             "an answer of at most 120 words and at most 4 citations, each quote short and copied exactly."})
+                continue
+            out = {"status": "not_in_second_brain", "answer": "", "citations": []}
         if out.get("status") != "answered":
             res["reason"] = "model abstained"; break
         valid = []
         for c in out.get("citations", []):
-            h = smap.get(str(c.get("id", "")).strip("[] "))
-            if h and quote_supported(c.get("quote", ""), h["text"]):
-                valid.append({"id": c["id"].strip("[] "), "quote": c["quote"]})
+            cid = str(c.get("id", "")).strip("[] "); h = smap.get(cid); qt = c.get("quote", "")
+            if not (h and quote_supported(qt, h["text"])):
+                # exact quote, wrong source label: re-attribute to the source that really contains it (still verified)
+                cid = next((k for k, x in smap.items() if quote_supported(qt, x["text"])), None)
+                if cid: log("llm.jsonl", {"event": "citation-reattributed", "question": q[:200], "from": c.get("id"), "to": cid})
+            if cid and cid in smap and quote_supported(qt, smap[cid]["text"]):
+                valid.append({"id": cid, "quote": qt})
         if valid:
             res.update(status="answered", answer=out.get("answer", "").strip(), citations=valid)
             seen = []

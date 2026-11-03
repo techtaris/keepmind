@@ -32,6 +32,10 @@ For thinking models (e.g. some Gemma/Qwen variants), `ollama.think` is set to `f
 ## Layer 3 — Citation check
 Every citation must name a retrieved source **and** its quote must be supported by that source: the quote's words (ignoring markdown and punctuation) must appear contiguously, or ≥ 90 % of its word pairs must occur in the chunk. Citations that fail are dropped. If none survive, the model gets **one** stricter retry ("copy quotes exactly, or abstain"); if that fails too, the answer becomes "Not in the second brain." Rejected citations are logged to `logs/llm.jsonl`.
 
+Two recoveries keep correct answers from being lost:
+- **Wrong source label:** a quote that is copied exactly from a *different* provided source than the one it names is re-attributed to that source (same word-level check; logged as `citation-reattributed`). A quote found in no source is still dropped.
+- **Cut-off reply:** if the reply is not valid JSON (usually a long list that hit `max_tokens`), the model is asked once more for a short answer (≤ 120 words, ≤ 4 citations) instead of abstaining.
+
 What it cannot catch: a *correct quote attached to the wrong claim* (e.g. a sentence about product B used to describe product A). Rules 6–8 and the evaluation set target that case.
 
 ## Layer 4 — Second opinion
