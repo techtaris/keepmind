@@ -34,6 +34,7 @@ Every citation must name a retrieved source **and** its quote must be supported 
 
 Two recoveries keep correct answers from being lost:
 - **Wrong source label:** a quote that is copied exactly from a *different* provided source than the one it names is re-attributed to that source (same word-level check; logged as `citation-reattributed`). A quote found in no source is still dropped.
+- **Stitched list quotes:** a quote that joins list items with `...`, `…` or line breaks is checked fragment by fragment; every fragment must be in the source, and together they need at least 4 words.
 - **Cut-off reply:** if the reply is not valid JSON (usually a long list that hit `max_tokens`), the model is asked once more for a short answer (≤ 120 words, ≤ 4 citations) instead of abstaining.
 
 What it cannot catch: a *correct quote attached to the wrong claim* (e.g. a sentence about product B used to describe product A). Rules 6–8 and the evaluation set target that case.

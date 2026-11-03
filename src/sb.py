@@ -790,7 +790,17 @@ def norm(s):
 def words(s):
     return re.findall(r"[0-9a-záéíóúñü]+", s.lower())
 
+QUOTE_SPLIT = re.compile(r"\.{3}|…|\\n|\n|\s[•·|]\s")
 def quote_supported(quote, source):
+    """A quote stitched from list items ("A... B", "A\\nB") is checked fragment by fragment: every fragment must be in the
+    source (fragments of 1 word must be a word of the source) and the fragments together must have >= 4 words."""
+    segs = [x for x in QUOTE_SPLIT.split(quote) if words(x)]
+    if len(segs) > 1:
+        sw = set(words(source))
+        return sum(len(words(x)) for x in segs) >= 4 and all(_quote_in(x, source) if len(words(x)) >= 2 else words(x)[0] in sw for x in segs)
+    return _quote_in(quote, source)
+
+def _quote_in(quote, source):
     """Exact match on words (markdown/punctuation ignored); fallback: >=90% of the quote's word bigrams occur in the source."""
     q = words(quote); src = words(source)
     if len(q) < 2: return False
