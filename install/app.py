@@ -107,11 +107,21 @@ def installer_argv(component, chat, embed):
     return ["bash", os.path.join(HERE, "install.sh"), component, "--chat-model", chat, "--embed-model", embed]
 
 def instance_cmd(inst, args):
-    if IS_WIN: return [os.path.join(inst, "bin", "sb.cmd")] + args
-    return ["bash", os.path.join(inst, "bin", "sb-sandboxed")] + args
+    """Returns (argv, env). F5: on Windows, never go through a .cmd file: cmd.exe re-parses arguments ("BatBadBut"),
+    so text from the Ask box could run commands. Call the interpreter and sb.py directly instead."""
+    if IS_WIN:
+        py = wizard_python()
+        if not py: raise ValueError("No suitable Python found.")
+        env = {"SB_ROOT": inst, "TMPDIR": os.path.join(inst, "tmp"), "TEMP": os.path.join(inst, "tmp"), "DO_NOT_TRACK": "1", "NO_PROXY": "127.0.0.1,localhost"}
+        return [py, "-I", "-B", os.path.join(REPO, "src", "sb.py")] + args, env
+    return ["bash", os.path.join(inst, "bin", "sb-sandboxed")] + args, None
 
 # ----------------------------------------------------------------------------- native folder picker
-def pick_folder(title):
+PICKER_TITLES = {"source": "Choose a source folder for the Second Brain", "instance": "Choose (or create) the instance folder"}
+
+def pick_folder(kind):
+    """F2: the dialog title is chosen server-side from a fixed list and handed to the OS as data, never as code."""
+    title = PICKER_TITLES.get(kind, PICKER_TITLES["source"])
     w = WINDOW["w"]
     if w is not None:
         import webview
@@ -119,11 +129,13 @@ def pick_folder(title):
         return r[0] if r else None
     try:
         if IS_MAC:
-            r = subprocess.run(["osascript", "-e", f'POSIX path of (choose folder with prompt "{title}")'], capture_output=True, text=True, timeout=600)
+            r = subprocess.run(["osascript", "-e", "on run argv", "-e", "POSIX path of (choose folder with prompt (item 1 of argv))",
+                                "-e", "end run", title], capture_output=True, text=True, timeout=600)
         elif IS_WIN:
             ps = ("Add-Type -AssemblyName System.Windows.Forms; $d=New-Object System.Windows.Forms.FolderBrowserDialog; "
-                  f"$d.Description='{title}'; if($d.ShowDialog() -eq 'OK'){{$d.SelectedPath}}")
-            r = subprocess.run(["powershell", "-NoProfile", "-STA", "-Command", ps], capture_output=True, text=True, timeout=600)
+                  "$d.Description=$env:SB_PICKER_TITLE; if($d.ShowDialog() -eq 'OK'){$d.SelectedPath}")
+            r = subprocess.run(["powershell", "-NoProfile", "-STA", "-Command", ps], capture_output=True, text=True, timeout=600,
+                               env={**os.environ, "SB_PICKER_TITLE": title})
         else:
             r = subprocess.run(["zenity", "--file-selection", "--directory", f"--title={title}"], capture_output=True, text=True, timeout=600)
         p = r.stdout.strip().rstrip("/\\") if r.returncode == 0 else ""
@@ -201,7 +213,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
         except ValueError: return self._send(400, {"error": "bad json"})
         try:
             if self.path == "/api/pick-folder":
-                p = pick_folder(str(body.get("title", "Choose a folder"))[:80])
+                p = pick_folder(str(body.get("kind", "source")))
                 if p and body.get("check"):
                     ap, status, msg = wiz.classify_root(p); return self._send(200, {"path": ap, "status": status, "message": msg})
                 return self._send(200, {"path": p})
@@ -226,9 +238,11 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 if action == "ask":
                     q = str(body.get("question", "")).strip()[:500]
                     if not q: return self._send(400, {"error": "empty question"})
-                    return self._send(200, {"job": start_job("Ask", instance_cmd(inst, ["ask", q]), cwd=inst)})
+                    argv, env = instance_cmd(inst, ["ask", q])
+                    return self._send(200, {"job": start_job("Ask", argv, env=env, cwd=inst)})
                 if action not in acts: return self._send(400, {"error": "unknown action"})
-                return self._send(200, {"job": start_job(action.capitalize(), instance_cmd(inst, acts[action]), cwd=inst)})
+                argv, env = instance_cmd(inst, acts[action])
+                return self._send(200, {"job": start_job(action.capitalize(), argv, env=env, cwd=inst)})
             if self.path == "/api/open-folder":
                 return self._send(200, {"ok": open_folder(os.path.abspath(os.path.expanduser(str(body.get("path", "")))))})
         except ValueError as e:

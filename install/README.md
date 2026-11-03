@@ -42,9 +42,10 @@ powershell -ExecutionPolicy Bypass -File install\install.ps1 -Component models -
 
 ## Security
 - **Local only:** the app listens on `127.0.0.1` on a random port, behind a per-launch token and a Host-header check.
+- **Fixed dialog titles:** the folder-picker titles are chosen on the server and passed to AppleScript/PowerShell as data, never as code.
 - **No free-form shell:** the page can only trigger allow-listed installer components, the setup wizard, and a fixed set of `sb` actions. Model names, environment-variable names and folders are validated on the server.
 - **Same rules as the terminal:** folder rules come from `setup_wizard.classify_root`. Nothing is created without the explicit grant.
 
 ## Platform notes
 - **macOS** is the reference platform. `sb` runs inside the Seatbelt sandbox, and doctor tests it.
-- **Windows** is experimental. The wizard writes `bin\sb.cmd` launchers, but there is **no OS sandbox** (doctor reports those checks as FAIL), the bash-only full pipeline is disabled, and the symlink fixture test is skipped without symlink privilege.
+- **Windows** is experimental. The desktop app runs Python and `src/sb.py` directly. It never goes through `.cmd` files, because cmd.exe re-parses their arguments. The wizard also writes `bin\sb.cmd` launchers for your own terminal, but there is **no OS sandbox** (doctor reports those checks as FAIL), the bash-only full pipeline is disabled, and the symlink fixture test is skipped without symlink privilege.

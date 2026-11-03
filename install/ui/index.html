@@ -198,7 +198,7 @@ $('logClose').onclick = () => $('log').style.display = 'none';
 $('addFolder').onclick = async () => {
   $('folderMsg').textContent = 'Waiting for the folder dialog…';
   try {
-    const d = await api('/api/pick-folder', {title: 'Choose a source folder for the Second Brain', check: true});
+    const d = await api('/api/pick-folder', {kind: 'source', check: true});
     $('folderMsg').textContent = '';
     if (!d.path) return;
     if (d.status === 'refused') { $('folderMsg').innerHTML = `<span class="bad">${esc(d.path)}: ${esc(d.message)}</span>`; return; }
@@ -207,7 +207,7 @@ $('addFolder').onclick = async () => {
   } catch (err) { $('folderMsg').textContent = err.message; }
 };
 $('pickInstance').onclick = async () => {
-  const d = await api('/api/pick-folder', {title: 'Choose (or create) the instance folder'});
+  const d = await api('/api/pick-folder', {kind: 'instance'});
   if (d.path) { $('instance').value = d.path; summary(); }
 };
 $('openInst').onclick = () => api('/api/open-folder', {path: $('instance').value}).catch(err => alert(err.message));

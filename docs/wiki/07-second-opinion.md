@@ -16,7 +16,7 @@ An **on-demand** check: was "Not in the second brain" the right call, or did the
 1. **Select** abstentions from `logs/query.jsonl` (or run `--query` first).
 2. **Rebuild** the same top-8 excerpts the local model saw, from the index (≤ 2,500 characters each), and **scrub** secret patterns again.
 3. **Show** the question, the excerpt paths and the total size; **ask** y/n.
-4. **Send** via the Claude Code CLI with your own login: `claude -p --output-format json --max-turns 1`, with file, shell and web tools disallowed, from an empty working folder.
+4. **Send** via the Claude Code CLI with your own login, locked down: `claude -p --output-format json --max-turns 1 --tools "" --strict-mcp-config --mcp-config '{"mcpServers":{}}' --permission-mode dontAsk` (no built-in tools, none of your MCP servers, nothing that would need approval), from an empty working folder. A CLI too old to accept these flags makes `sb validate` refuse instead of sending with weaker settings.
 5. Claude returns `verdict` (`correct_abstention` | `missed_answer` | `partial`), `answer`, `citations`, `missing`, `search_hints`, `notes`.
 6. **Verify locally:** Claude's quotes are checked against the excerpts with the same rule as layer 3. A missed/partial verdict without verifiable quotes is marked **UNVERIFIED**.
 7. **Record:** `logs/validation.jsonl`, a readable report `eval/validation/<date>.md`, and — for a verified miss — a proposed question in `eval/validation/eval-candidates.json`.

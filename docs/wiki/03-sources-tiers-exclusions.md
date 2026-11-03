@@ -28,7 +28,7 @@ Only the folders listed in `roots` are read, recursively, and only **read**: the
 ## Content scan (after parsing, before indexing)
 | Match | Action |
 |---|---|
-| High-confidence secret (AWS/GitHub/Slack/Google keys, `sk-…` keys, PEM private keys, JWTs, npm tokens) | Whole file **quarantined**: logged with path, rule, line and file hash — never the value |
+| High-confidence secret (AWS/GitHub/Slack/Google keys, `sk-…` keys, PEM private keys, JWTs, npm tokens), checked in the raw bytes **and** in the extracted text, so keys inside .docx/.xlsx/.pptx/.pdf are caught | Whole file **quarantined**: logged with path, rule, line and file hash — never the value |
 | Low-confidence (URLs with embedded passwords, literal `password = "…"` assignments) | Span **redacted** to `«REDACTED:rule»`; file indexed with `redacted=1` |
 
 `sb quarantine` lists quarantined files. If a match is a real key, rotate it at the provider.
