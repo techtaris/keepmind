@@ -20,3 +20,8 @@ tmp/
 __pycache__/
 *.pyc
 .DS_Store
+
+# Personal setup notes written by you or an agent (they contain your paths)
+AUDIT.md
+*.local.md
+SETUP-LOG*.md

@@ -23,7 +23,7 @@ Without pywebview the page opens in your default browser. Install it from step 1
 ```bash
 ./install/install.sh check                     # macOS/Linux: status as JSON
 ./install/install.sh ollama                    # components: python ollama models git node claude codex pywebview all
-./install/install.sh models --chat-model llama3.1:8b --embed-model nomic-embed-text
+./install/install.sh models --embed-model nomic-embed-text --chat-model llama3.1:8b   # leave out --chat-model for hosted answers
 ```
 ```bat
 install\install.bat check

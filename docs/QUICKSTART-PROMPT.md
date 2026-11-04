@@ -24,11 +24,12 @@ Work through this checklist and mark each line ✅ / ❌ / ⏭ with one line of 
 2. Install what is missing, one component at a time, after I approve:
    `install/install.sh <python|ollama|git|node|claude|codex|pywebview>` (Windows: `install\install.bat <component>`).
 3. Models: check my RAM and suggest a chat model from docs/REQUIREMENTS.md (fast and fits in memory).
-   After I approve: `install/install.sh models --chat-model <model> --embed-model nomic-embed-text`.
+   After I approve: `install/install.sh models --embed-model nomic-embed-text --chat-model <model>`
+   (leave out `--chat-model` when answers come from the Claude or OpenAI API: only the embedding model is needed).
 4. Vault preview: `python3 vault_init.py "<VAULT_FOLDER>" --dry-run`. Show me what would be created
    (00 Home … 15 Personal, 90 Templates); nothing existing is ever changed.
 5. Create the instance (config, index, logs) outside the repo, e.g. ~/SecondBrain-Instance:
-   run `python3 setup_wizard.py` and answer with my choices above (vault = new or existing,
+   run `./setup.sh` (it picks a Python ≥ 3.10 with FTS5; plain `python3` may be an older system Python; on Windows `py -3 setup_wizard.py`) and answer with my choices above (vault = new or existing,
    15 Personal not indexed unless I say so). Show me its permission summary before I accept.
 6. Health: `<instance>/bin/sb-sandboxed doctor --record` (Windows: `<instance>\bin\sb.cmd doctor --record`).
    Every line PASS; on Windows/Linux only the sandbox lines may FAIL (no OS sandbox there).

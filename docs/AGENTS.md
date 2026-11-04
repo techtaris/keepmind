@@ -27,3 +27,5 @@ The operator is an AI assistant that *uses* the second brain on your behalf: it 
 Independent of the backend: an on-demand review of "Not in the second brain" answers by Claude through the Claude Code CLI (your own login). See [wiki/07-second-opinion.md](wiki/07-second-opinion.md).
 
 Anything the operator reads is sent to its provider. The generated rules keep it to `sb` output and cited files.
+
+**The agent CLI itself is outside the second brain's control.** Claude Code and Codex read their own configuration and login from `~/.claude` and `~/.codex` when they start; the second brain never reads those folders, and its rule files cannot stop the CLI from using them. You start the CLI yourself, from `<instance>/agent/`.

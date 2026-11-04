@@ -241,8 +241,8 @@ class Handler(http.server.BaseHTTPRequestHandler):
             if self.path == "/api/install":
                 comp = body.get("component")
                 if comp not in COMPONENTS: return self._send(400, {"error": "unknown component"})
-                chat, embed = str(body.get("chat_model") or "llama3.1:8b"), str(body.get("embed_model") or "nomic-embed-text")
-                if not (MODEL_RX.match(chat) and MODEL_RX.match(embed)): return self._send(400, {"error": "invalid model name"})
+                chat, embed = str(body.get("chat_model") or "").strip(), str(body.get("embed_model") or "nomic-embed-text")
+                if not (MODEL_RX.match(embed) and (not chat or MODEL_RX.match(chat))): return self._send(400, {"error": "invalid model name"})
                 return self._send(200, {"job": start_job(f"Install: {comp}", installer_argv(comp, chat, embed), cwd=HERE)})
             if self.path == "/api/create":
                 jid, inst = create(body); return self._send(200, {"job": jid, "instance": inst})

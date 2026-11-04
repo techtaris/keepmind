@@ -13,7 +13,7 @@ sb-sandboxed skills run <id> --input task.md --context-query "topic"
 ```
 
 ## Import
-- **Which files:** SQL LIKE patterns in `skills.path_patterns` (config). Defaults: `%/SKILL.md`, `%.prompt.md`, `%/prompts/%.md`, `%/workflows/%.md`, `%/.claude/commands/%.md`, `%/.github/prompts/%.md`. Add your own folders.
+- **Which files:** SQL LIKE patterns in `skills.path_patterns` (config). Defaults: `%/SKILL.md`, `%.prompt.md`, `%/prompts/%.md`, `%/workflows/%.md`, `%/.claude/commands/%.md`, `%/.github/prompts/%.md`. Add your own folders. Note: `.claude`, `.codex` and `.cursor` folders are not entered by default (see [Sources & exclusions](03-sources-tiers-exclusions.md)), so skills inside them are imported only after you allow that folder.
 - **Dedupe:** by content hash (duplicated agent folders are common). An id clash with a different source gets an 8-character hash suffix.
 - **Per skill:** `skill.json` (id, name, description, source path + SHA-256, license, `offline_ok`, `requires_unavailable_tools`, `status: candidate`), `prompt.md` (procedure + `{{input}}` and `{{context}}` slots), `SOURCE.md`.
 - **Tool translation:** references to Claude/Codex tools (Bash, WebFetch, MCP, sub-agents, slash commands…) are flagged; such skills are `offline_ok: false` and the prompt tells the operator to do those steps manually or with `sb ask` / `sb query`.

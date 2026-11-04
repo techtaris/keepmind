@@ -190,7 +190,7 @@ function summary() {
                + the instance folder and the Second Brain code
 WRITE (only):  ${inst || '(choose an instance folder)'}
 NETWORK:       ${p === 'ollama' ? 'loopback only (127.0.0.1): Ollama + local web UI. Internet denied, including DNS.'
-                                : `loopback + HTTPS to the ${p} API. Retrieved excerpts of your files are sent to ${p}.`}
+                                : `loopback + outbound HTTPS :443 (not limited to one host). Retrieved excerpts of your files are sent to the ${p} API.`}
 NEVER READ:    .env*, keys/certificates, credential files, browser profiles, .git internals,
                dependency/build folders, databases, email/chat exports; symlinks never followed.
 OS SANDBOX:    ${S.os === 'Darwin' ? 'macOS Seatbelt profile (enforced by the OS)' : 'NOT AVAILABLE on this OS (rules enforced in code only)'}
@@ -254,8 +254,9 @@ $('pickInstance').onclick = async () => {
 };
 $('openInst').onclick = () => api('/api/open-folder', {path: $('instance').value}).catch(err => alert(err.message));
 $('pullModels').onclick = async () => {
-  if (!confirm(`Pull ${$('embed').value} and ${$('chat').value} with Ollama? This downloads several GB.`)) return;
-  const {job} = await api('/api/install', {component: 'models', chat_model: $('chat').value, embed_model: $('embed').value});
+  const chat = provider() === 'ollama' ? $('chat').value : '';  // hosted answers need only the local embedding model
+  if (!confirm(`Pull ${$('embed').value}${chat ? ' and ' + chat : ''} with Ollama?${chat ? ' This downloads several GB.' : ''}`)) return;
+  const {job} = await api('/api/install', {component: 'models', chat_model: chat, embed_model: $('embed').value});
   await watch(job, 'Pull Ollama models'); load();
 };
 $('create').onclick = async () => {

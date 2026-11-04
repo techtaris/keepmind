@@ -11,7 +11,7 @@
 param(
   [ValidateSet("check","python","ollama","models","git","node","claude","codex","pywebview","all")]
   [string]$Component = "check",
-  [string]$ChatModel = "llama3.1:8b",
+  [string]$ChatModel = "",
   [string]$EmbedModel = "nomic-embed-text"
 )
 $ErrorActionPreference = "Stop"

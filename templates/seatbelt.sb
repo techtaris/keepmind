@@ -4,12 +4,12 @@
 ; ---- network
 (deny network*)
 {{NETWORK_RULES}}
-; ---- reads: deny the home folder, re-allow only the source roots, the instance and the code
-(deny file-read* (subpath "{{HOME}}"))
+; ---- reads: deny the home folder and external drives, re-allow only the source roots, the instance and the code
+(deny file-read* (subpath "{{HOME}}") (subpath "/Volumes"))
 (allow file-read-metadata (literal "{{HOME}}"))
 (allow file-read* {{READ_SUBPATHS}})
 ; ---- writes: instance folder only (TMPDIR points into it)
-(deny file-write* (subpath "{{HOME}}"))
+(deny file-write* (subpath "{{HOME}}") (subpath "/Volumes"))
 (allow file-write* (subpath "{{INSTANCE}}"))
 ; ---- synthetic out-of-scope fixture: proves the boundary works (sb doctor)
 (deny file-read* file-write* (subpath "{{INSTANCE}}/eval/fixtures/oos-denied"))

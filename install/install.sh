@@ -3,7 +3,7 @@
 # Usage: ./install.sh [check|python|ollama|models|git|node|claude|codex|pywebview|all] [--chat-model M] [--embed-model M]
 set -euo pipefail
 COMP="${1:-check}"; shift || true
-CHAT="llama3.1:8b"; EMBED="nomic-embed-text"
+CHAT=""; EMBED="nomic-embed-text"   # chat model only when asked (hosted backends need embeddings only)
 while [ $# -gt 0 ]; do case "$1" in --chat-model) CHAT="$2"; shift 2;; --embed-model) EMBED="$2"; shift 2;; *) shift;; esac; done
 run() { echo ">> $*"; "$@"; }
 has() { command -v "$1" >/dev/null 2>&1; }
@@ -14,9 +14,9 @@ find_py() { for p in /opt/homebrew/bin/python3.12 /opt/homebrew/bin/python3 /usr
   has "$p" || [ -x "$p" ] || continue
   if "$p" -c 'import sys,sqlite3; assert sys.version_info>=(3,10); sqlite3.connect(":memory:").execute("create virtual table t using fts5(x)")' 2>/dev/null; then echo "$p"; return; fi; done; }
 status() {
-  local py ol pys; py="$(find_py || true)"; pys="missing"; [ -n "$py" ] && pys="ok ($py)"; ol="$(curl -s --noproxy '*' --max-time 3 http://127.0.0.1:11434/api/version 2>/dev/null || true)"
+  local py ol pys; py="$(find_py || true)"; pys="missing"; [ -n "$py" ] && pys="ok ($py)"; ol="$(curl -s --noproxy '*' --max-time 3 http://127.0.0.1:11434/api/version 2>/dev/null | sed -n 's/.*"version" *: *"\([0-9A-Za-z.+-]*\)".*/\1/p' || true)"
   printf '{\n "python": "%s",\n "ollama": "%s",\n "git": "%s",\n "node": "%s",\n "claude": "%s",\n "codex": "%s",\n "sandbox": "%s"\n}\n' \
-    "$pys" "$( [ -n "$ol" ] && echo "ok $ol" || (has ollama && echo 'installed, not running' || echo missing) )" \
+    "$pys" "$( [ -n "$ol" ] && echo "ok, version $ol" || (has ollama && echo 'installed, not running' || echo missing) )" \
     "$(has git && echo ok || echo 'missing (optional)')" "$(has npm && echo ok || echo 'missing (needed for claude/codex CLIs)')" \
     "$(has claude && echo ok || echo 'missing (optional)')" "$(has codex && echo ok || echo 'missing (optional)')" \
     "$( [ -x /usr/bin/sandbox-exec ] && echo 'ok (Seatbelt)' || echo 'not available on this OS')"

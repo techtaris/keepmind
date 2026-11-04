@@ -23,7 +23,10 @@ Only the folders listed in `roots` are read, recursively, and only **read**: the
 - **Secrets:** `.env` and every `.env.*` (templates often contain real-looking credentials), keys and certificates (`*.pem`, `*.key`, `*.p12`, `id_rsa*`…), `.npmrc`, `.pypirc`, `.netrc`, `.git-credentials`, Terraform state/vars, `secret(s).*`, `*credential*.json`, `client_secret*.json`, `service-account*.json`, agent `settings*.json`.
 - **Private data stores:** databases (`*.sqlite`, `*.db`…), email (`*.eml`, `*.mbox`, `*.msg`), chat exports.
 - **Noise:** lock files, minified/map files, binaries and media, files over the size limits (2 MB text; 256 KB JSON/YAML/HTML/CSV; 50 MB office).
-- **Folders never entered:** `.git`, `node_modules`, virtualenvs, build/dist/cache folders, browser profiles (`.chrome*`), `.obsidian`, and every other dot-folder except `.github`, `.agents`, and the `skills/commands/agents` parts of `.claude`, `.codex`, `.cursor`.
+- **Folders never entered:** `.git`, `node_modules`, virtualenvs, build/dist/cache folders, browser profiles (`.chrome*`), `.obsidian`, `Library`, `Applications`, and every other dot-folder except `.github` and `.agents`.
+- **Never entered in any letter case, at any depth** (`prune_dirs_ci`): credential and agent-configuration folders (`.ssh`, `.gnupg`, `.aws`, `.azure`, `.kube`, `.docker`, `.config`, `.claude`, `.codex`, `.cursor`, `.ollama`), `AppData`, cloud-sync folders (`OneDrive`, `OneDrive - <org>`, `iCloud Drive`, `Dropbox`, `Dropbox (<team>)`, `Google Drive`, `CloudStorage`, `Mobile Documents`), and folders named `credentials` or `secrets`. To index a project's own `.claude`/`.codex`/`.cursor` skills, remove that name from `prune_dirs_ci` and add it to `dot_dir_allow` in the instance's `config/exclusions.json`.
+- **Credential-like file names:** `.env` and anything starting with `.env` (`.envrc`, `.env.local`…), and config/text files named like `credentials`, `secrets`, `api_key` or `token` (`aws-credentials.json`, `api_keys.yaml`, `token.txt`). Markdown notes *about* secrets (`secrets-management.md`) are still indexed.
+- **The code repository itself** is never indexed (tier X), even when it sits inside a source folder.
 - **Symlinks:** recorded, never followed.
 
 ## Content scan (after parsing, before indexing)

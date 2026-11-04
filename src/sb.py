@@ -56,6 +56,8 @@ REG = load_json(J("config", "source-register.json"))
 HOME = CFG["home"]
 NOT_FOUND = CFG["answer"]["not_found"]
 PRUNE = set(EXC["prune_dirs"])
+PRUNE_CI = {n.casefold() for n in EXC.get("prune_dirs_ci", [])}
+PRUNE_CI_PREFIX = ("onedrive -", "onedrive-", "dropbox (", "google drive (")  # e.g. "OneDrive - Company", "Dropbox (Team)"
 DOT_ALLOW = set(EXC["dot_dir_allow"])
 DOT_SUB = EXC["dot_dir_allow_subpaths"]
 BROWSER_RX = re.compile(EXC["browser_profile_dir_regex"])
@@ -208,7 +210,7 @@ def walk(roots, eval_mode=False, stats=None):
                     continue
                 if e.is_dir(follow_symlinks=False):
                     n = e.name
-                    if n in PRUNE:
+                    if n in PRUNE or n.casefold() in PRUNE_CI or n.casefold().startswith(PRUNE_CI_PREFIX):
                         bump("pruned-dir"); continue
                     if BROWSER_RX.match(n):
                         bump("browser-profile-dir"); continue
@@ -1226,7 +1228,9 @@ def system_tests():
     out.append({"id": "S-prompt", "type": "system", "pass": "PROMPT-CANARY-77" in sbk and "{body}" not in sbk, "detail": sbk.replace("\n", " ")[:100]})
     # E18b / E23: index content checks
     bad_env = con.execute("SELECT COUNT(*) FROM sources WHERE path LIKE '%/.env%'").fetchone()[0]
-    out.append({"id": "S-secret", "type": "system", "pass": bad_env == 0, "detail": f".env files in eval index: {bad_env}"})
+    denied_names = (".env", ".env.local", ".envrc", ".environment", "private.key", "credentials.json")
+    blocked = all(not classify_file(n, 1, "/synthetic/" + n, "A")[0] for n in denied_names)
+    out.append({"id": "S-secret", "type": "system", "pass": bad_env == 0 and blocked, "detail": f".env files in eval index: {bad_env}; in-memory excluded-name checks: {blocked}"})
     leak = con.execute("SELECT COUNT(*) FROM chunks WHERE text LIKE '%OOS-CANARY-42%' OR path LIKE '%oos-denied%' OR path LIKE '%linked-canary%'").fetchone()[0]
     out.append({"id": "E23", "type": "system", "pass": leak == 0, "detail": f"symlink/out-of-scope canary chunks: {leak}"})
     # E21 freshness
