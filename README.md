@@ -8,6 +8,8 @@ A private, searchable "second brain" over folders **you** choose. It answers que
 - **Notes vault:** one folder of Markdown notes (Obsidian or any editor) with category folders (00 Home … 15 Personal) and templates; you write, the second brain reads it as knowledge. See [Notes vault](docs/wiki/15-notes-vault.md).
 - **Optional second opinion:** `sb validate` asks Claude (your own Claude Code login, on demand) whether a "Not in the second brain" answer was right.
 
+🔒 **Security:** macOS is the reference platform (OS sandbox enforced and tested by `sb doctor`). Linux and Windows run without an OS sandbox; Windows is experimental. See [docs/SECURITY.md](docs/SECURITY.md), including known limitations.
+
 📚 **Documentation wiki:** [docs/README.md](docs/README.md), including [the Judgment Call](docs/wiki/06-judgment-call.md) and interactive [diagrams](docs/README.md#diagrams).
 - **No personal data in this repo.** Your configuration, index and logs live in a separate *instance* folder created by the setup wizard.
 
@@ -22,13 +24,16 @@ macOS: double-click `install/start-ui.command`. Windows: double-click `install\s
 ollama pull nomic-embed-text          # embeddings (always local)
 ollama pull llama3.1:8b               # or any local chat model you prefer
 
-# 2. Run the wizard: it asks for your folders, backend, operator agent and permissions
+# 2. Run the wizard: it asks for your folders, notes vault, backend, operator agent and permissions
 ./setup.sh
 
 # 3. First run (paths are printed by the wizard)
 ~/SecondBrain-Instance/bin/sb-sandboxed doctor --record
 bash ~/SecondBrain-Instance/bin/run-all.sh
 ~/SecondBrain-Instance/bin/sb-sandboxed ask "What is project X about?"
+
+# 4. Write notes in ~/SecondBrainVault (Obsidian or any editor), then pick them up:
+~/SecondBrain-Instance/bin/sb-sandboxed ingest
 ```
 
 ## What the wizard asks

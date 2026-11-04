@@ -16,4 +16,5 @@
 bash {{INSTANCE}}/bin/run-all.sh   # index + eval + backup, logged to logs/run-all.log
 {{SB}} ask "question"       # answer with sources, or "Not in the second brain."
 {{SB}} serve                # local web UI on 127.0.0.1:8765
+{{SB}} ingest               # after adding or editing notes in your vault (if you set one up)
 ```

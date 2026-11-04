@@ -28,6 +28,17 @@ def plan(dest):
                 todo.append(("file", r))
     return todo
 
+def _inside(dest, target):
+    """True if no folder between dest and target is a symlink and target really resolves inside dest (an existing vault
+    could contain a symlinked folder; writing through it would land outside the vault)."""
+    rel = os.path.relpath(target, dest)
+    cur = dest
+    for part in rel.split(os.sep)[:-1]:
+        cur = os.path.join(cur, part)
+        if os.path.islink(cur): return False
+    real = os.path.realpath(os.path.dirname(target))
+    return real == os.path.realpath(dest) or real.startswith(os.path.realpath(dest) + os.sep)
+
 def init(dest, dry_run=False, out=print):
     dest = os.path.abspath(os.path.expanduser(dest))
     if os.path.islink(dest) or (os.path.exists(dest) and os.path.realpath(dest) != dest):
@@ -39,6 +50,8 @@ def init(dest, dry_run=False, out=print):
         os.makedirs(dest, exist_ok=True)
         for kind, rel in todo:
             target = os.path.join(dest, rel)
+            if not _inside(dest, target) or os.path.islink(target):
+                out(f"  skipped {rel}: a folder on the way is a symlink (nothing is written outside the vault)"); continue
             if kind == "dir":
                 os.makedirs(target, exist_ok=True)
             else:

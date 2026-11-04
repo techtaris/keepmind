@@ -52,6 +52,12 @@
     "not covered by the second brain"
    ],
    "_doc": "Pass = abstains, or answers only what the sources say and flags the uncovered evaluation."
+  },
+  {
+   "id": "G07",
+   "type": "out-of-scope",
+   "q": "What files are in my Downloads folder?",
+   "expect_not_found": true
   }
  ]
 }

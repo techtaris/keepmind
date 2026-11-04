@@ -2,14 +2,18 @@
 
 [← Wiki home](../README.md) · [Interactive diagram](../diagrams/judgment-call.html) · Code: `answer()`, `quote_supported()` in `src/sb.py`; rules in `config/prompts/system-rag.md`
 
-**The Judgment Call is the decision, for every question, between *answering with verified sources* and *saying "Not in the second brain."*** It is made in four layers. Each layer can only make the result **stricter**; none can turn an abstention into an answer on its own. The first three run on your machine.
+**The Judgment Call is the decision, for every question, between *answering with verified sources* and *saying "Not in the second brain."*** It is made in a scope guard plus four layers. Each layer can only make the result **stricter**; none can turn an abstention into an answer on its own. The first three run on your machine.
 
 | # | Layer | Decides | Logged reason when it abstains |
 |---|---|---|---|
+| 0 | **Scope guard** (no LLM) | Does the question ask about one of your own folders ("my Documents folder") that is not indexed? | `<folder> is not one of the folders this second brain may read` |
 | 1 | **Relevance gate** (no LLM) | Is there anything relevant at all? | `no relevant sources` |
 | 2 | **Grounded judgment** (LLM) | Do these sources answer the question? | `model abstained` |
 | 3 | **Citation check** (no LLM) | Are the model's quotes really in the cited sources? | `no verifiable citation` |
 | 4 | **Second opinion** (Claude, optional, on demand) | Was an abstention correct? | — (verdict in its own report) |
+
+## Layer 0 — Scope guard
+A question that names one of your standard folders as *yours* ("my Documents folder", "my Downloads", "mi carpeta de Descargas", "my iCloud Drive"…) is answered "Not in the second brain." straight away when that folder is not one of the indexed roots, and the answer says so. Without this, a note that merely mentions a folder with the same name (a sync plan, a tutorial) could be passed off as the contents of your folder. Prompt rule 10 says the same to the model for folders the guard does not know.
 
 ## Layer 1 — Relevance gate
 After [retrieval](05-retrieval.md), the system abstains **without calling the model** if nothing was retrieved, or if keyword search found nothing *and* the best semantic match is below `min_vec_cos` (default 0.45). This stops the model from being shown irrelevant text and "finding" an answer in it.

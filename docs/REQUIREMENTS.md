@@ -16,6 +16,7 @@
 | git | Versioning this repo | — |
 | Claude Code (`claude`) | Operator agent = `claude-code`, or `sb validate` second opinions | The wizard writes `agent/CLAUDE.md` + `agent/.claude/settings.json` |
 | Codex CLI (`codex`) | Operator agent = `codex` | The wizard writes `agent/AGENTS.md` + `codex-config.example.toml` |
+| Obsidian | Editing the notes vault | Free from obsidian.md; any text editor works too. The vault's starter `.obsidian/` settings use only core plugins (Templates, Daily notes) |
 | Anthropic / OpenAI API key | Hosted answer backend | Exported in your shell; the wizard stores only the variable **name** |
 
 ## Hardware guidance (local mode)

@@ -792,12 +792,11 @@ def words(s):
 
 QUOTE_SPLIT = re.compile(r"\.{3}|…|\\n|\n|\s[•·|]\s")
 def quote_supported(quote, source):
-    """A quote stitched from list items ("A... B", "A\\nB") is checked fragment by fragment: every fragment must be in the
-    source (fragments of 1 word must be a word of the source) and the fragments together must have >= 4 words."""
+    """A quote stitched from list items ("A... B", "A\\nB") is checked fragment by fragment: every fragment must have
+    at least 2 words and appear in the source exactly (so a string of single common words can never pass)."""
     segs = [x for x in QUOTE_SPLIT.split(quote) if words(x)]
     if len(segs) > 1:
-        sw = set(words(source))
-        return sum(len(words(x)) for x in segs) >= 4 and all(_quote_in(x, source) if len(words(x)) >= 2 else words(x)[0] in sw for x in segs)
+        return all(len(words(x)) >= 2 and _quote_in(x, source) for x in segs)
     return _quote_in(quote, source)
 
 def _quote_in(quote, source):
@@ -875,8 +874,35 @@ def source_block(sid, h):
     return (f'<source id="{sid}" path="{h["path"]}" lines="{h["lines"]}" project="{h["project"]}" modified="{h["modified"]}"{cat}>\n'
             f'{body}\n</source>')
 
+# Questions about the user's own standard folders ("my Documents folder", "mis descargas"). If that folder is not one of
+# the indexed roots, the answer is "Not in the second brain." without asking the model: a source that merely mentions
+# a folder with the same name (a sync plan, a tutorial) is about something else.
+HOME_DIRS = {"documents": "Documents", "documentos": "Documents", "downloads": "Downloads", "descargas": "Downloads",
+             "desktop": "Desktop", "escritorio": "Desktop", "pictures": "Pictures", "imágenes": "Pictures", "imagenes": "Pictures",
+             "fotos": "Pictures", "photos": "Pictures", "movies": "Movies", "videos": "Movies", "music": "Music", "música": "Music",
+             "musica": "Music", "library": "Library", "applications": "Applications", "aplicaciones": "Applications",
+             "icloud": "Library/Mobile Documents", "icloud drive": "Library/Mobile Documents", "onedrive": "OneDrive",
+             "dropbox": "Dropbox", "google drive": "Google Drive", "appdata": "AppData"}
+_HD = "|".join(sorted((re.escape(k) for k in HOME_DIRS), key=len, reverse=True))
+_STRONG = "downloads|descargas|icloud drive|icloud|onedrive|dropbox|google drive|appdata"  # unambiguous folder names
+SCOPE_RXS = [re.compile(r"(?i)\b(?:my|mi|mis)\s+(?:folder|carpeta|directory|directorio)\s+(?:de\s+|of\s+)?(" + _HD + r")\b"),
+             re.compile(r"(?i)\b(?:my|mi|mis)\s+(" + _HD + r")\s+(?:folder|directory|carpeta|directorio)\b"),
+             re.compile(r"(?i)\b(?:my|mi|mis)\s+(" + _STRONG + r")\b")]
+def out_of_scope_folder(q):
+    """Return the home folder a question asks about when that folder is not indexed, else None."""
+    m = next((m for m in (rx.search(q) for rx in SCOPE_RXS) if m), None)
+    if not m: return None
+    d = os.path.join(HOME, HOME_DIRS[m.group(1).lower()])
+    covered = any(_np(r) == _np(d) or _np(r).startswith(_np(d) + "/") or _np(d).startswith(_np(r) + "/") for r in CFG["roots"])
+    return None if covered else d
+
 def answer(con, q, key="main", ns=None, cats=None):
     t0 = time.time()
+    oos = out_of_scope_folder(q) if key == "main" else None
+    if oos:
+        res = {"question": q, "status": "not_in_second_brain", "answer": NOT_FOUND, "citations": [], "sources": [], "retrieved": [],
+               "diag": {"out_of_scope": oos}, "reason": f"{oos} is not one of the folders this second brain may read"}
+        return finish(res, [], t0)
     hits, diag = retrieve(con, q, key, ns, cats)
     res = {"question": q, "status": "not_in_second_brain", "answer": NOT_FOUND, "citations": [], "sources": [], "retrieved": [h["path"] for h in hits], "diag": diag}
     gate = diag["bm25_hits"] == 0 and diag["vec_best"] < CFG["retrieval"].get("min_vec_cos", 0.45)
@@ -958,6 +984,8 @@ def render(res):
         out.append("\nSources:")
         for s in res["sources"]:
             out.append(f"  [{s['id']}] {s['path']} (lines {s['lines']}, {s['project']}, modified {s['modified']}{', ' + s['category'] if s.get('category') and s['category'] != 'derived' else ''}{', derived' if s['ns']=='derived' else ''})")
+    elif res.get("diag", {}).get("out_of_scope"):
+        out.append(f"\n({res['diag']['out_of_scope']} is not one of the folders this second brain may read.)")
     elif res.get("closest"):
         out.append("\nClosest sources (they do not contain the answer):")
         out += [f"  - {c['path']} (lines {c['lines']})" for c in res["closest"]]

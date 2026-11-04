@@ -15,6 +15,7 @@ You are a systems engineer setting up a private, local-first "second brain" for 
 | Answer backend | `ollama` (local, default) · `anthropic` (Claude API) · `openai` (Codex's provider) |
 | Local models (Ollama) | chat: `{{CHAT_MODEL}}` · embeddings: `{{EMBED_MODEL}}` (default `nomic-embed-text`) |
 | Hosted model + API-key variable name (if hosted) | `{{HOSTED_MODEL}}`, `{{API_KEY_ENV}}` (never paste the key itself) |
+| Notes vault (Obsidian or any Markdown editor) | `new` (default `~/SecondBrainVault`) · `existing` (`{{VAULT_PATH}}`) · `none`; index 15 Personal? (default no); index client/sales notes? (default yes) |
 | Operator agent | `none` · `claude-code` · `codex` |
 | Folders/projects to exclude or treat as work/personal/third-party | `{{EXCLUSIONS_AND_TIERS}}` |
 

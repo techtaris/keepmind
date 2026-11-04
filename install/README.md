@@ -14,9 +14,10 @@ Without pywebview the page opens in your default browser. Install it from step 1
 ## The five steps
 1. **Prerequisites.** Shows the status of: Python ≥ 3.10 + SQLite FTS5, Ollama, pulled models, the macOS sandbox, git, Node.js/npm, the Claude Code CLI, the Codex CLI and pywebview. Each **Install** button runs one allow-listed component of the installer script and streams its output, including the exact command.
 2. **Source folders.** **Add folder…** opens the native folder dialog. Credential, app-data and cloud-sync folders, your whole home folder and the repo itself are refused. Desktop/Documents/Downloads need a tick to include. Pick the instance folder, which must be outside the repo.
+   **Notes vault:** create a new vault (default `~/SecondBrainVault`, folders 00 Home … 15 Personal + 90 Templates), use an existing one (only missing folders and templates are added, nothing is changed), or none. Choose whether client/sales notes and 15 Personal are indexed. See [Notes vault](../docs/wiki/15-notes-vault.md).
 3. **Models & agents.** Choose the answer backend: local Ollama (offline), the Claude API or the OpenAI API. Hosted backends take a model id and the *name* of the environment variable with the key, never the key itself. Choose the embedding model (always local) and the optional operator agent: Claude Code CLI or Codex CLI. **Pull these Ollama models** downloads them.
 4. **Review & create.** The exact READ / WRITE / NETWORK / NEVER-READ / sandbox / models / operator summary. Tick **I grant these permissions**, then **Create instance**. This runs `setup_wizard.py` non-interactively with your answers.
-5. **Run.** Doctor, Ingest, Evaluate, Full pipeline (macOS/Linux), Stats, Ask, Open instance folder.
+5. **Run.** Doctor, Ingest, Evaluate, Full pipeline (macOS/Linux), Stats, Vault index, Ask, Open instance folder, Open vault.
 
 ## Installer scripts (usable without the UI)
 ```bash
