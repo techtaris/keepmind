@@ -10,6 +10,7 @@ A local-first, agent-agnostic "second brain": it indexes folders you choose and 
 | [Notes vault](wiki/15-notes-vault.md) | One folder of Markdown notes (Obsidian or any editor) with category folders and templates, read as knowledge |
 | [Desktop installer](wiki/14-desktop-installer.md) | Point-and-click setup: prerequisites, folder picker, models/agents, create, run |
 | [Requirements](REQUIREMENTS.md) | Tools to install, models, hardware guidance |
+| [Quick-start prompt (checklist)](QUICKSTART-PROMPT.md) | Short prompt: prerequisites, installs, vault in the folder you choose, setup and health check |
 | [Setup prompt for an AI agent](PROMPT.md) | Copy-paste prompt that has Claude Code, Codex or a local agent plan and run the setup |
 
 ## How it works

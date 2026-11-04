@@ -58,6 +58,7 @@ bash ~/SecondBrain-Instance/bin/run-all.sh
 | `src/sb.py` | The engine: ingest, search, ask, serve, doctor, eval, knowledge, skills, backup (Python standard library only) |
 | `templates/` | Config, exclusions, sandbox profile, prompts, launchers, eval fixtures, operator-agent files |
 | `docs/` | [Wiki home](docs/README.md) · `wiki/` feature pages · `diagrams/` (Archify HTML) · `REQUIREMENTS.md`, `SECURITY.md`, `AGENTS.md`, `RUNBOOK.md` |
+| `docs/QUICKSTART-PROMPT.md` | A short checklist prompt: prerequisites, installs, vault creation in the folder you choose, setup, health check |
 | `docs/PROMPT.md` | A ready-to-use prompt that has an AI agent plan and set up a second brain with this repo |
 
 ## License
