@@ -1,4 +1,6 @@
-# Second Brain (local-first, agent-agnostic)
+# keepmind
+
+**Local-first second brain for your notes:** a ready-made Markdown vault (Obsidian or any editor), any LLM or agent CLI, and answers that cite your files or say "Not in the second brain."
 
 A private, searchable "second brain" over folders **you** choose. It answers questions with citations to your own files, or says **"Not in the second brain."**
 
@@ -20,6 +22,9 @@ macOS: double-click `install/start-ui.command`. Windows: double-click `install\s
 ## Quick start (macOS, terminal)
 
 ```bash
+# 0. Get the code
+git clone https://github.com/techtaris/keepmind.git && cd keepmind
+
 # 1. Install the required tools (see docs/REQUIREMENTS.md), then pull two models:
 ollama pull nomic-embed-text          # embeddings (always local)
 ollama pull llama3.1:8b               # or any local chat model you prefer
