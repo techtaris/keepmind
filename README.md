@@ -64,3 +64,17 @@ bash ~/SecondBrain-Instance/bin/run-all.sh
 ## License
 
 [MIT](LICENSE) © 2026 TECHTARIS. Diagrams embed third-party components: see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+
+### Local Gemma validation
+
+The answer engine is `gemma4:12b` through Ollama on `127.0.0.1:11434`. No OpenAI account, API key, or credit purchase is needed for Second Brain answers. The old `validate-openai.py` helper is retired and will not prompt for a key.
+
+```bash
+# Resume any incomplete embeddings, then validate locally:
+/Users/tarisadmin/sandbox/SB-Instance/bin/sb-sandboxed embed
+/opt/homebrew/bin/python3.12 -I -B /Users/tarisadmin/sandbox/SB-Instance/bin/validate-local.py
+```
+
+The validation helper checks that all chunks have vectors, runs `sb eval --system`, checks the report, and asks which answer model is configured. Initial parsing found 45 unparsed files and quarantined 9 files; see AUDIT.md. Do not start another embed process while the current run is active.
+
+Generated operator files are `/Users/tarisadmin/sandbox/SB-Instance/agent/AGENTS.md` and `codex-config.example.toml`. The example configuration is not automatically applied. Start Codex yourself from that agent folder, as requested. Codex remains a separate hosted operator even though Second Brain answers are local.

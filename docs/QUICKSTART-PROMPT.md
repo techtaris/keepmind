@@ -15,6 +15,7 @@ Answer engine: local Ollama model | Claude API | OpenAI API.   Agent CLI to mana
 Rules: read only the folders above; never touch credentials, ~/.ssh, ~/.config, app data or cloud-sync folders;
 never open .env or key files; ask me before installing anything, downloading models, or using a new path.
 Never print secret values. Stop and tell me if something needs a folder I did not list.
+Keep your notes, logs and audit files in the instance folder, never in the repository (it is public: no local paths there).
 
 Work through this checklist and mark each line ✅ / ❌ / ⏭ with one line of evidence:
 
