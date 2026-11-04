@@ -1129,9 +1129,15 @@ def doctor(args):
             chk(f"ollama: model {w} installed", m is not None, (m or {}).get("digest", "")[:16])
             if m: cur[w] = {"name": m["name"], "digest": m.get("digest"), "size": m.get("size"), "details": m.get("details", {})}
         if os.path.exists(fs(manifest_p)):
-            rec = load_json(manifest_p)["models"]
+            manifest = load_json(manifest_p)
+            rec = manifest["models"]
             for w, m in cur.items():
-                chk(f"checksum: {w} digest unchanged since acquisition", rec.get(w, {}).get("digest") == m["digest"], m["digest"][:16])
+                if w not in rec and args.record:
+                    rec[w] = m
+                    with open(fs(manifest_p), "w") as f: json.dump(manifest, f, indent=1)
+                    chk(f"checksum: {w} digest recorded (newly selected model)", True, m["digest"][:16])
+                else:
+                    chk(f"checksum: {w} digest unchanged since acquisition", rec.get(w, {}).get("digest") == m["digest"], m["digest"][:16])
         elif cur and args.record:
             with open(fs(manifest_p), "w") as f: json.dump({"recorded": now(), "models": cur}, f, indent=1)
             chk("checksum: model digests recorded (first run)", True, manifest_p)

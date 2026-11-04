@@ -26,7 +26,7 @@
 | Add or remove a folder | Edit `roots` in `config/secondbrain.json` **and** the read rule in `config/seatbelt/secondbrain.sb` (or re-run `./setup.sh` with a new instance), then `$SB ingest` and `$SB doctor` |
 | Vault settings | Edit `vaults` in `config/secondbrain.json` (`include_personal`, `include_clients`, `folder_map`), then `$SB ingest` (only vault notes are re-read) |
 | Enable a tier | Add it to `enabled_tiers`, then `$SB ingest` |
-| New chat model | `ollama pull <model>`; set `ollama.chat_model`; remove its entry in `models/ollama-models.json`; `$SB doctor --record`; `$SB eval --system` |
+| New chat model | `ollama pull <model>`; set `ollama.chat_model`; `$SB doctor --record` (a newly selected model's digest is added to `models/ollama-models.json`; a changed digest of an already recorded model still FAILs until you remove its entry and record again); `$SB eval --system` |
 | New embedding model | As above for `embed_model`, then delete `index/brain.sqlite` and run `$SB ingest` (full re-embed) |
 
 ## Troubleshooting
