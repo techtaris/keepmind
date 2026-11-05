@@ -81,7 +81,7 @@ def state():
         pv = False
     prereqs.append({"id": "pywebview", "label": "pywebview (native window)", "required": False, "ok": pv, "detail": "installed" if pv else "optional: without it this UI opens in your browser"})
     return {"os": OS, "home": HOME, "repo": REPO, "fts5_here": fts, "default_instance": os.path.join(HOME, "SecondBrain-Instance"),
-            "default_vault": os.path.join(HOME, "SecondBrainVault"),
+            "default_vault": os.path.join(HOME, "SecondBrain-Vault"),
             "prereqs": prereqs, "ollama_models": models, "installer": "install.ps1" if IS_WIN else "install.sh"}
 
 # ----------------------------------------------------------------------------- jobs (allow-listed commands, streamed output)

@@ -181,7 +181,7 @@ def main():
     vmode = ask("  Notes vault", "new", "SB_VAULT_MODE", ["new", "existing", "none"])
     vault = None; vault_todo = []; vault_cfg = None
     if vmode != "none":
-        vp = ask("  Vault folder", os.path.join(HOME, "SecondBrainVault") if vmode == "new" else "", "SB_VAULT_PATH")
+        vp = ask("  Vault folder", os.path.join(HOME, "SecondBrain-Vault") if vmode == "new" else "", "SB_VAULT_PATH")
         if not vp: sys.exit("A vault folder is required (or choose none).")
         vp, status, msg = classify_root(vp, must_exist=(vmode == "existing"))
         if vp == inst or vp.startswith(inst + os.sep) or inst.startswith(vp + os.sep):

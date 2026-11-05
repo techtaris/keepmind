@@ -8,7 +8,7 @@ Fill in the four lines at the top, then paste everything below the line.
 
 ```text
 Set up my Second Brain with the repository at: <REPO_FOLDER>
-Notes vault location (new or existing folder, any drive):   <VAULT_FOLDER>
+Notes vault location (new or existing folder, any drive):   <VAULT_FOLDER>   (default ~/SecondBrain-Vault)
 Other folders to index, read-only (optional):                 <FOLDER_1>, <FOLDER_2>
 Answer engine: local Ollama model | Claude API | OpenAI API.   Agent CLI to manage it: none | claude-code | codex
 
@@ -29,7 +29,8 @@ Work through this checklist and mark each line ✅ / ❌ / ⏭ with one line of 
    (leave out `--chat-model` when answers come from the Claude or OpenAI API: only the embedding model is needed).
 4. Vault preview: `python3 vault_init.py "<VAULT_FOLDER>" --dry-run`. Show me what would be created
    (00 Home … 15 Personal, 90 Templates); nothing existing is ever changed.
-5. Create the instance (config, index, logs) outside the repo, e.g. ~/SecondBrain-Instance:
+5. Create the instance (config, index, logs) outside the repo, default ~/SecondBrain-Instance
+   (next to the vault, default ~/SecondBrain-Vault):
    run `./setup.sh` (it picks a Python ≥ 3.10 with FTS5; plain `python3` may be an older system Python; on Windows `py -3 setup_wizard.py`) and answer with my choices above (vault = new or existing,
    15 Personal not indexed unless I say so). Show me its permission summary before I accept.
 6. Health: `<instance>/bin/sb-sandboxed doctor --record` (Windows: `<instance>\bin\sb.cmd doctor --record`).

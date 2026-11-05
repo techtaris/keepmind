@@ -31,7 +31,7 @@ The templates carry YAML frontmatter (`type`, `date`, `status`, `tags`) and use 
 The starter `.obsidian/` settings point *Templates* to `90 Templates`, *Daily notes* to `02 Daily`, attachments to `12 Assets` and new notes to `01 Inbox`. In another editor, copy a template and fill the placeholders by hand.
 
 ## Creating or completing a vault
-- **Setup wizard / desktop installer:** choose *Create a new vault* (default `~/SecondBrainVault`, or `%USERPROFILE%\SecondBrainVault` on Windows), *Use an existing vault*, or *No vault*. The vault is added to the source folders automatically.
+- **Setup wizard / desktop installer:** choose *Create a new vault* (default `~/SecondBrain-Vault`, or `%USERPROFILE%\SecondBrain-Vault` on Windows), *Use an existing vault*, or *No vault*. The vault is added to the source folders automatically.
 - **By hand:** `python3 vault_init.py <folder>` creates the vault, or adds only what is missing to an existing one. `--dry-run` lists what would be created. It never overwrites, renames or deletes anything, and it leaves an existing `.obsidian/` folder untouched.
 
 The same folder rules as for source folders apply: credential, app-data and cloud-sync locations (iCloud Drive, OneDrive, Dropbox, Google Drive) are refused; Desktop/Documents need confirmation.

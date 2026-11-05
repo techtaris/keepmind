@@ -37,7 +37,7 @@ ollama pull llama3.1:8b               # or any local chat model you prefer
 bash ~/SecondBrain-Instance/bin/run-all.sh
 ~/SecondBrain-Instance/bin/sb-sandboxed ask "What is project X about?"
 
-# 4. Write notes in ~/SecondBrainVault (Obsidian or any editor), then pick them up:
+# 4. Write notes in ~/SecondBrain-Vault (Obsidian or any editor), then pick them up:
 ~/SecondBrain-Instance/bin/sb-sandboxed ingest
 ```
 
@@ -50,7 +50,7 @@ bash ~/SecondBrain-Instance/bin/run-all.sh
 | Instance folder | `~/SecondBrain-Instance` (must be outside this repo) |
 | Source folders | You list them. Credential, app-data and cloud-sync folders are refused; Desktop/Documents/Downloads need confirmation |
 | Models | Embedding model + local chat model (or a hosted model id + the *name* of the environment variable holding the API key) |
-| Notes vault | `new` = create `~/SecondBrainVault` with folders 00 Home … 15 Personal + 90 Templates and note templates; or use an existing vault; or none |
+| Notes vault | `new` = create `~/SecondBrain-Vault` with folders 00 Home … 15 Personal + 90 Templates and note templates; or use an existing vault; or none |
 | Permissions | A summary of READ / WRITE / NETWORK / NEVER-READ / sandbox; nothing is created until you say yes |
 
 ## Layout
