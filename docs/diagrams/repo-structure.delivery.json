@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "f932a4ba-9582-4bb0-ae7a-a32e082bd4e8",
+  "status": "current",
+  "command": "deliver",
+  "type": "tree",
+  "input": "/Users/tarisadmin/Projects/keepmind/.archify/tree-repo-structure-20261112-134921/candidate.json",
+  "output": "/Users/tarisadmin/Projects/keepmind/docs/diagrams/repo-structure.html",
+  "specification": {
+    "sha256": "8308f7c5fdb9c579d2c8e1bfffa915c3cbf2e3284e6ede16db56018155a5c4ca",
+    "bytes": 4371
+  },
+  "artifact": {
+    "sha256": "b71f48eec152b46e83bb01f4054b54a86e7208b0ba313d5df195f591d5df28d5",
+    "bytes": 863938
+  }
+}

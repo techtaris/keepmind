@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "5355c344-1527-4973-8037-ee06203ec571",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "/Users/tarisadmin/Projects/keepmind/.archify/architecture-runtime-20261112-134921/candidate.json",
+  "output": "/Users/tarisadmin/Projects/keepmind/docs/diagrams/runtime-architecture.html",
+  "specification": {
+    "sha256": "9d0ea64795538a4805eaa8fd92b116c7775a1270a49b81407b0081b1123a89a7",
+    "bytes": 3626
+  },
+  "artifact": {
+    "sha256": "2f499c10ffe66a470ef75df0bc79803b2a54a85f7c613a4078cd0f3900b21243",
+    "bytes": 843799
+  }
+}

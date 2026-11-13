@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "55829f83-f21d-416f-a7a9-16b9a3583216",
+  "status": "current",
+  "command": "deliver",
+  "type": "workflow",
+  "input": "/Users/tarisadmin/Projects/keepmind/.archify/workflow-usage-20261112-134921/candidate.json",
+  "output": "/Users/tarisadmin/Projects/keepmind/docs/diagrams/usage-workflow.html",
+  "specification": {
+    "sha256": "37815e1ca5dbe8d90aac3ef8c5f1a4db45cbeb7103b4083fdcee0ff95aa7d9fb",
+    "bytes": 3735
+  },
+  "artifact": {
+    "sha256": "a0a427260f80a269442e55445c2744f9b12f3e55b9f18981472a4001ec4cc2c9",
+    "bytes": 843775
+  }
+}

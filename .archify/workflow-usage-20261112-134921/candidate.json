@@ -1,0 +1,45 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "Using keepmind: setup to answers",
+    "locale": "en",
+    "output": "docs/diagrams/usage-workflow.html",
+    "quality_profile": "showcase",
+    "repository": {"url": "git@github.com:techtaris/keepmind.git", "link_mode": "local-only", "revision": "0e5668536acdcc697c55b4810f19b3473b90f992"}
+  },
+  "lanes": [
+    { "id": "you", "label": "You" },
+    { "id": "setup", "label": "Setup (repo)" },
+    { "id": "instance", "label": "Instance (sb-sandboxed)" }
+  ],
+  "phases": [
+    { "id": "p_setup", "label": "One-time setup", "fromCol": 0, "toCol": 2 },
+    { "id": "p_first", "label": "First run", "fromCol": 3, "toCol": 3, "variant": "emphasis" },
+    { "id": "p_daily", "label": "Daily use", "fromCol": 4, "toCol": 5, "variant": "dashed" }
+  ],
+  "mainPath": ["pull", "wizard", "doctor", "runall", "ask", "answer"],
+  "nodes": [
+    { "id": "pull", "lane": "you", "col": 0, "type": "external", "label": "Install + pull models", "sublabel": "ollama pull", "sources": [{ "path": "README.md", "line": 30, "end_line": 35 }] },
+    { "id": "installer", "lane": "setup", "col": 0, "type": "frontend", "label": "Desktop installer", "sublabel": "start-ui.command", "sources": [{ "path": "install/app.py", "line": 154, "end_line": 199 }] },
+    { "id": "wizard", "lane": "setup", "col": 1, "type": "backend", "label": "./setup.sh wizard", "sublabel": "folders, backend, agent", "tag": "confirm permissions", "sources": [{ "path": "setup.sh", "line": 1, "end_line": 12 }, { "path": "setup_wizard.py", "line": 136 }] },
+    { "id": "vault", "lane": "setup", "col": 2, "type": "database", "label": "Vault + instance", "sublabel": "~/SecondBrain-*", "sources": [{ "path": "vault_init.py", "line": 42, "end_line": 70 }] },
+    { "id": "doctor", "lane": "instance", "col": 2, "type": "security", "label": "doctor --record", "sublabel": "health + model digests", "sources": [{ "path": "src/sb.py", "line": 1059 }] },
+    { "id": "runall", "lane": "instance", "col": 3, "type": "backend", "label": "run-all.sh", "sublabel": "ingest, eval, backup", "sources": [{ "path": "templates/bin/run-all.sh", "line": 19, "end_line": 32 }] },
+    { "id": "notes", "lane": "you", "col": 4, "type": "frontend", "label": "Write notes", "sublabel": "Obsidian or any editor" },
+    { "id": "ingest", "lane": "instance", "col": 4, "type": "backend", "label": "sb ingest", "sublabel": "incremental re-index", "sources": [{ "path": "src/sb.py", "line": 569, "end_line": 647 }] },
+    { "id": "ask", "lane": "instance", "col": 5, "type": "backend", "label": "sb ask \"…\"", "sublabel": "retrieve + answer", "sources": [{ "path": "src/sb.py", "line": 901, "end_line": 915 }] },
+    { "id": "answer", "lane": "you", "col": 5, "type": "external", "label": "Cited answer", "sublabel": "or Not in the second brain" }
+  ],
+  "edges": [
+    { "id": "e-pull-wizard", "from": "pull", "to": "wizard", "variant": "emphasis" },
+    { "id": "e-installer-wizard", "from": "installer", "to": "wizard", "label": "or", "variant": "dashed", "role": "branch" },
+    { "id": "e-wizard-vault", "from": "wizard", "to": "vault", "label": "creates" },
+    { "id": "e-wizard-doctor", "from": "wizard", "to": "doctor", "variant": "emphasis" },
+    { "id": "e-doctor-runall", "from": "doctor", "to": "runall", "variant": "emphasis" },
+    { "id": "e-runall-ask", "from": "runall", "to": "ask", "variant": "emphasis" },
+    { "id": "e-notes-ingest", "from": "notes", "to": "ingest", "label": "new notes", "variant": "dashed", "role": "branch" },
+    { "id": "e-ingest-ask", "from": "ingest", "to": "ask", "variant": "dashed" },
+    { "id": "e-ask-answer", "from": "ask", "to": "answer", "variant": "emphasis" }
+  ]
+}

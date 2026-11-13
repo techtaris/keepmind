@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "diagram_type": "tree",
+  "meta": {
+    "title": "keepmind repository structure",
+    "locale": "en",
+    "output": "docs/diagrams/repo-structure.html",
+    "quality_profile": "showcase",
+    "repository": {"url": "git@github.com:techtaris/keepmind.git", "link_mode": "local-only", "revision": "0e5668536acdcc697c55b4810f19b3473b90f992"}
+  },
+  "layout": { "direction": "right" },
+  "nodes": [
+    { "id": "root", "label": "keepmind/", "sublabel": "local-first second brain", "sources": [{ "path": "README.md", "line": 1, "end_line": 13 }] },
+    { "id": "setup", "label": "Setup (terminal)", "parent": "root", "sublabel": "setup.sh + wizard" },
+    { "id": "setup_sh", "label": "setup.sh", "parent": "setup", "sublabel": "finds Python 3.10+ with FTS5", "sources": [{ "path": "setup.sh", "line": 1, "end_line": 12 }] },
+    { "id": "wizard", "label": "setup_wizard.py", "parent": "setup", "sublabel": "folders, models, permissions", "sources": [{ "path": "setup_wizard.py", "line": 136 }] },
+    { "id": "vault_init", "label": "vault_init.py", "parent": "setup", "sublabel": "creates notes vault, never overwrites", "sources": [{ "path": "vault_init.py", "line": 42, "end_line": 70 }] },
+    { "id": "install", "label": "install/", "parent": "root", "sublabel": "desktop installer", "sources": [{ "path": "install/README.md", "line": 1 }] },
+    { "id": "app", "label": "app.py + ui/index.html", "parent": "install", "sublabel": "local UI on 127.0.0.1", "sources": [{ "path": "install/app.py", "line": 271, "end_line": 280 }] },
+    { "id": "launchers", "label": "start-ui.command / .bat", "parent": "install", "sublabel": "double-click entry", "sources": [{ "path": "install/start-ui.command", "line": 1 }] },
+    { "id": "prereq", "label": "install.sh / .ps1 / .bat", "parent": "install", "sublabel": "prerequisite installers", "sources": [{ "path": "install/install.sh", "line": 1 }] },
+    { "id": "src", "label": "src/", "parent": "root", "sublabel": "the engine" },
+    { "id": "sbpy", "label": "sb.py", "parent": "src", "sublabel": "ingest, query, ask, serve, doctor, eval", "sources": [{ "path": "src/sb.py", "line": 1678, "end_line": 1700 }] },
+    { "id": "templates", "label": "templates/", "parent": "root", "sublabel": "copied into each instance" },
+    { "id": "t_config", "label": "secondbrain.json, exclusions.json", "parent": "templates", "sublabel": "config + never-read rules", "sources": [{ "path": "templates/exclusions.json", "line": 1 }] },
+    { "id": "t_seatbelt", "label": "seatbelt*.sb", "parent": "templates", "sublabel": "macOS sandbox profiles", "sources": [{ "path": "templates/seatbelt.sb", "line": 1, "end_line": 19 }] },
+    { "id": "t_bin", "label": "bin/", "parent": "templates", "sublabel": "sb, sb-sandboxed, run-all.sh, sb-validate", "sources": [{ "path": "templates/bin/sb-sandboxed", "line": 1, "end_line": 9 }] },
+    { "id": "t_agents", "label": "agents/", "parent": "templates", "sublabel": "CLAUDE.md, AGENTS.md, settings", "sources": [{ "path": "templates/agents/CLAUDE.md", "line": 1, "end_line": 23 }] },
+    { "id": "t_prompts", "label": "prompts/ + eval/", "parent": "templates", "sublabel": "RAG prompt, eval questions", "sources": [{ "path": "templates/prompts/system-rag.md", "line": 1 }] },
+    { "id": "t_vault", "label": "vault/", "parent": "templates", "sublabel": "00 Home … 15 Personal, 90 Templates", "sources": [{ "path": "templates/vault/00 Home/Start Here.md", "line": 1 }] },
+    { "id": "docs", "label": "docs/", "parent": "root", "sublabel": "documentation", "sources": [{ "path": "docs/README.md", "line": 1, "end_line": 47 }] },
+    { "id": "wiki", "label": "wiki/", "parent": "docs", "sublabel": "15 feature pages" , "sources": [{ "path": "docs/wiki/01-overview.md", "line": 1 }] },
+    { "id": "diagrams", "label": "diagrams/", "parent": "docs", "sublabel": "Archify HTML" , "sources": [{ "path": "docs/diagrams/architecture.html", "line": 1 }] },
+    { "id": "guides", "label": "SECURITY, RUNBOOK, PROMPT …", "parent": "docs", "sublabel": "reference + agent prompts", "sources": [{ "path": "docs/SECURITY.md", "line": 1 }] }
+  ],
+  "cards": [
+    { "dot": "amber", "title": "Not in the repo", "items": ["Config, index, logs and backups live in the instance folder (default ~/SecondBrain-Instance)", "Your notes live in the vault (default ~/SecondBrain-Vault)"] }
+  ]
+}

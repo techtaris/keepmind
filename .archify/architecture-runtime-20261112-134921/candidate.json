@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "keepmind runtime architecture",
+    "locale": "en",
+    "output": "docs/diagrams/runtime-architecture.html",
+    "quality_profile": "showcase",
+    "repository": {"url": "git@github.com:techtaris/keepmind.git", "link_mode": "local-only", "revision": "0e5668536acdcc697c55b4810f19b3473b90f992"}
+  },
+  "components": [
+    { "id": "user", "type": "external", "label": "You", "sublabel": "terminal or sb serve UI", "pos": [40, 200], "size": [130, 60] },
+    { "id": "operator", "type": "external", "label": "Operator agent", "sublabel": "Claude Code / Codex", "pos": [280, 360], "size": [140, 60], "sources": [{ "path": "templates/agents/CLAUDE.md", "line": 1, "end_line": 23 }] },
+    { "id": "launcher", "type": "security", "label": "sb-sandboxed", "sublabel": "sandbox-exec launcher", "pos": [280, 200], "size": [140, 60], "sources": [{ "path": "templates/bin/sb-sandboxed", "line": 1, "end_line": 9 }, { "path": "templates/seatbelt.sb", "line": 1, "end_line": 19 }] },
+    { "id": "engine", "type": "backend", "label": "sb.py engine", "sublabel": "ingest · retrieve · answer", "pos": [560, 200], "size": [150, 60], "tag": "stdlib only", "sources": [{ "path": "src/sb.py", "line": 569, "end_line": 647 }, { "path": "src/sb.py", "line": 703, "end_line": 720 }, { "path": "src/sb.py", "line": 901, "end_line": 915 }] },
+    { "id": "sources", "type": "database", "label": "Source folders + vault", "sublabel": "read-only roots", "pos": [560, 40], "size": [150, 60], "sources": [{ "path": "src/sb.py", "line": 574, "end_line": 575 }] },
+    { "id": "index", "type": "database", "label": "SQLite index", "sublabel": "FTS5 + vectors, in instance", "pos": [560, 360], "size": [150, 60], "sources": [{ "path": "src/sb.py", "line": 512, "end_line": 530 }] },
+    { "id": "ollama", "type": "backend", "label": "Ollama", "sublabel": "127.0.0.1 embed + chat", "pos": [900, 200], "size": [140, 60], "sources": [{ "path": "src/sb.py", "line": 550, "end_line": 567 }] },
+    { "id": "hosted", "type": "cloud", "label": "Hosted LLM (opt-in)", "sublabel": "Anthropic / OpenAI", "pos": [900, 40], "size": [140, 60], "sources": [{ "path": "src/sb.py", "line": 830, "end_line": 850 }] }
+  ],
+  "boundaries": [
+    { "kind": "security-group", "label": "Seatbelt sandbox: no internet", "wraps": ["engine", "sources", "index"] }
+  ],
+  "connections": [
+    { "id": "user-cmd", "from": "user", "to": "launcher", "label": "sb ask / ingest", "variant": "emphasis" },
+    { "id": "operator-cmd", "from": "operator", "to": "launcher", "label": "sb commands" },
+    { "id": "exec", "from": "launcher", "to": "engine", "label": "exec sandboxed", "variant": "emphasis" },
+    { "id": "read-sources", "from": "engine", "to": "sources", "label": "read + chunk" },
+    { "id": "write-index", "from": "engine", "to": "index", "label": "BM25 + vector search" },
+    { "id": "local-llm", "from": "engine", "to": "ollama", "label": "embed + chat (loopback)", "variant": "emphasis" },
+    { "id": "hosted-llm", "from": "engine", "to": "hosted", "label": "HTTPS if chosen", "variant": "dashed" }
+  ],
+  "cards": [
+    { "dot": "emerald", "title": "Answer rule", "items": ["Cites files and line ranges", "No relevant hits: \"Not in the second brain.\""] },
+    { "dot": "rose", "title": "Security", "items": ["Ollama URL must be loopback", "sb serve binds 127.0.0.1 only", "Hosted profile opens network only for its API"] },
+    { "dot": "violet", "title": "Second opinion", "items": ["bin/sb-validate runs outside the sandbox", "Uses your Claude Code login, on demand"] }
+  ]
+}

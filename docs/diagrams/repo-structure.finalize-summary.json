@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "command": "finalize",
+  "status": "pass",
+  "type": "tree",
+  "quality": "showcase",
+  "specification": {
+    "path": "/Users/tarisadmin/Projects/keepmind/.archify/tree-repo-structure-20261112-134921/candidate.json",
+    "sha256": "8308f7c5fdb9c579d2c8e1bfffa915c3cbf2e3284e6ede16db56018155a5c4ca",
+    "bytes": 4371
+  },
+  "artifact": {
+    "path": "/Users/tarisadmin/Projects/keepmind/docs/diagrams/repo-structure.html",
+    "sha256": "b71f48eec152b46e83bb01f4054b54a86e7208b0ba313d5df195f591d5df28d5",
+    "bytes": 863938
+  },
+  "gates": {
+    "validate": "pass",
+    "deliver": "pass",
+    "check": "pass",
+    "browser-check": "pass"
+  },
+  "diagnostics": [],
+  "diagnosticSummary": {
+    "total": 0,
+    "shown": 0,
+    "truncated": false
+  },
+  "evidence": {
+    "receipt": "/Users/tarisadmin/Projects/keepmind/docs/diagrams/repo-structure.finalize.json",
+    "summaryReceipt": "/Users/tarisadmin/Projects/keepmind/docs/diagrams/repo-structure.finalize-summary.json",
+    "browserCheckReceipt": "/Users/tarisadmin/Projects/keepmind/docs/diagrams/repo-structure.browser-check.json"
+  },
+  "update": {
+    "status": "current",
+    "installedVersion": "3.2.0",
+    "availableVersion": "3.2.0",
+    "releaseNotes": null,
+    "checkedAt": "2026-11-12T17:50:07.168Z",
+    "source": "cache",
+    "noticeRequired": false,
+    "noticeText": null
+  },
+  "visualReview": "not-requested",
+  "durationMs": 2356,
+  "browserCheck": {
+    "requested": true,
+    "ran": true
+  }
+}
